@@ -1,0 +1,11 @@
+# Colab already provides torch/torchvision (CUDA build): do not list them here.
+# avalanche-lib 0.6.0 is the version this code targets (API moves between releases).
+# TODO after the first successful Colab run: replace the unpinned lines with the
+# versions printed by `pip freeze` on Colab, so later runs are reproducible.
+avalanche-lib==0.6.0
+wandb
+hydra-core
+scikit-learn
+torchmetrics
+pandas
+matplotlib
