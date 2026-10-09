@@ -113,7 +113,7 @@ If Colab disconnects, re-run all cells. Finished runs are skipped.
 """),
     code(SETUP),
     code(r'''EPOCHS = 1           # Gate 0 only needs the pipeline to work; real epochs come from the Stage 1 sweep
-CONFIGS = [sr.make_cfg(stage="stage0", strategy="ewc", ewc_lambda=100.0, epochs=EPOCHS, seed=s)
+CONFIGS = [sr.make_cfg(stage="stage0", strategy="ewc", ewc_lambda=1.0, epochs=EPOCHS, seed=s)
            for s in (0, 1)]
 SHOW = ["strategy", "seed", "epochs", "n_experiences"]
 for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),

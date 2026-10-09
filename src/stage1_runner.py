@@ -28,13 +28,14 @@ DEFAULTS = dict(
     model="reduced_resnet18",
     nf=20,                     # ResNet base width: 20 = "reduced" (GEM/Mammoth), 64 = full
     strategy="naive",          # "naive" (= Flat) or "ewc"
-    ewc_lambda=100.0,
+    ewc_lambda=1.0,                # stability needs lr*lambda*Fisher < 2; 100 diverged on Colab
     epochs=1,                  # per experience; set by the epoch sweep
     batch_size=32,
     eval_batch_size=256,
     lr=0.03,                   # SGD lr of the fastest level (= the whole net for Flat)
     momentum=0.0,
     weight_decay=0.0,
+    grad_clip_norm=1.0,        # max global grad norm; None disables. Added after EWC diverged to NaN.
     # Learning-rate schedule across depth. "flat" = one lr everywhere.
     # "llrd" = flat net, but each depth level trains at lr / level_ratios[level].
     lr_schedule="flat",
@@ -300,28 +301,52 @@ def run_experiment(cfg, paths):
         def after_update(self, strategy, **kw):
             self.steps += 1
 
-    counter = StepCounter()
+    class TrainGuard(SupervisedPlugin):
+        # 1) Stops the run the moment the loss is NaN/inf, so a diverged run
+        #    crashes (no result file, retried later) instead of saving garbage.
+        # 2) Clips the global gradient norm (cfg grad_clip_norm).
+        # 3) Accumulates the training loss so it can be logged per experience.
+        def __init__(self):
+            super().__init__()
+            self.loss_sum, self.n = 0.0, 0
+
+        def after_backward(self, strategy, **kw):
+            loss = strategy.loss.detach()
+            if not torch.isfinite(loss):
+                raise FloatingPointError(f"non-finite training loss ({loss.item()}) "
+                                         f"at experience {strategy.experience.current_experience}")
+            if cfg["grad_clip_norm"] is not None:
+                torch.nn.utils.clip_grad_norm_(strategy.model.parameters(), cfg["grad_clip_norm"])
+            self.loss_sum += loss.item()
+            self.n += 1
+
+    counter, guard = StepCounter(), TrainGuard()
     evaluator = EvaluationPlugin(accuracy_metrics(experience=True, stream=True), loggers=[])
-    strategy = STRATEGY_BUILDERS[cfg["strategy"]](model, optimizer, cfg, device, evaluator, [counter])
+    strategy = STRATEGY_BUILDERS[cfg["strategy"]](model, optimizer, cfg, device, evaluator,
+                                                  [counter, guard])
 
     n_params = sum(p.numel() for p in model.parameters())
     run = wandb.init(project="fyp-nested-cl", group=cfg["stage"], name=rid, config=cfg,
                      reinit="finish_previous")
     run.summary["n_params"] = n_params
     T = len(bench.train_stream)
-    acc = []
+    acc, train_losses = [], []
     try:
         for i, exp in enumerate(bench.train_stream):
+            guard.loss_sum, guard.n = 0.0, 0
             strategy.train(exp, num_workers=cfg["num_workers"])
+            train_losses.append(guard.loss_sum / max(guard.n, 1))
             res = strategy.eval(bench.test_stream, num_workers=cfg["num_workers"])
             row = [100.0 * res[f"Top1_Acc_Exp/eval_phase/test_stream/Task000/Exp{j:03d}"]
                    for j in range(T)]
             acc.append(row)
             log = {"exp": i, "acc_seen_avg": float(np.mean(row[:i + 1])),
-                   "acc_current_exp": row[i], "optimizer_steps": counter.steps}
+                   "acc_current_exp": row[i], "optimizer_steps": counter.steps,
+                   "train_loss": train_losses[-1]}
             log.update({f"acc_exp/{j:02d}": row[j] for j in range(i + 1)})
             wandb.log(log, step=i)
-            print(f"  exp {i + 1}/{T}: seen-avg {log['acc_seen_avg']:.2f}%  current {row[i]:.2f}%")
+            print(f"  exp {i + 1}/{T}: seen-avg {log['acc_seen_avg']:.2f}%  current {row[i]:.2f}%"
+                  f"  train-loss {train_losses[-1]:.3f}")
         summary = summarize(acc)
         for k, v in summary.items():
             if not isinstance(v, list):
@@ -330,6 +355,6 @@ def run_experiment(cfg, paths):
     except BaseException:
         run.finish(exit_code=1)
         raise
-    return dict(summary, acc_matrix=acc, n_params=n_params, optimizer_steps=counter.steps,
+    return dict(summary, acc_matrix=acc, train_loss_per_exp=train_losses, n_params=n_params, optimizer_steps=counter.steps,
                 lr_per_group={str(pg["level"]): pg["lr"] for pg in pgs},
                 device=str(device), git_commit=_git_commit(), wandb_url=run.url)
