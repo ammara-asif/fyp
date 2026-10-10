@@ -117,7 +117,8 @@ If Colab disconnects, re-run all cells. Finished runs are skipped.
 """),
     code(SETUP),
     code(r'''EPOCHS = 1           # Gate 0 only needs the pipeline to work; real epochs come from the Stage 1 sweep
-CONFIGS = [sr.make_cfg(stage="stage0", strategy="ewc", ewc_lambda=1.0, epochs=EPOCHS, seed=s)
+CONFIGS = [sr.make_cfg(stage="stage0", strategy="ewc", ewc_lambda=1.0, epochs=EPOCHS, seed=s,
+                       eval_split="test")
            for s in (0, 1)]
 SHOW = ["strategy", "seed", "epochs", "n_experiences"]
 for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
@@ -144,8 +145,10 @@ Pick the epoch count with your supervisor. Don't just take the highest accuracy,
 """),
     code(SETUP),
     code(r'''EPOCH_GRID = [1, 5, 10, 20]   # edit if needed; 20 epochs × 20 tasks is the slow one, so run it last
-CONFIGS = [sr.make_cfg(stage="stage1_epoch_sweep", strategy="naive", epochs=e, seed=0) for e in EPOCH_GRID]
-SHOW = ["epochs", "seed"]
+CONFIGS = [sr.make_cfg(stage="stage1_epoch_sweep", strategy="naive", epochs=e, seed=0,
+                       eval_split="val")   # tuning -> held-out validation slice, never test
+           for e in EPOCH_GRID]
+SHOW = ["epochs", "seed", "eval_split"]
 for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
     code("out = run_sweep(CONFIGS, sr.run_experiment, paths)"),
     code(SUMMARY),
@@ -168,7 +171,8 @@ ARMS = {
     "flat":      dict(lr_schedule="flat"),
     "flat_llrd": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
 }
-CONFIGS = [sr.make_cfg(stage="stage1_control", strategy="naive", epochs=EPOCHS, seed=s, **arm)
+CONFIGS = [sr.make_cfg(stage="stage1_control", strategy="naive", epochs=EPOCHS, seed=s,
+                       eval_split="test", **arm)   # final comparison -> real test set
            for s in SEEDS for arm in ARMS.values()]
 SHOW = ["lr_schedule", "level_ratios", "seed", "epochs"]
 for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),

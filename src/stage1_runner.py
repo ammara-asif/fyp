@@ -5,7 +5,8 @@ The training loop, wandb logging, accuracy matrix and forgetting calculation
 should not need to change.
 
 Metric definitions (keep stable; changing them invalidates earlier runs):
-- acc_matrix[i][j] = top-1 accuracy (%) on experience j's test set after
+- acc_matrix[i][j] = top-1 accuracy (%) on experience j's evaluation set (held-out
+  validation slice if eval_split="val", real test set if "test") after
   training on experience i. Single 100-way head, no task labels (class-IL).
 - final_avg_acc     = mean_j acc_matrix[T-1][j]
 - avg_incremental_acc = mean_i ( mean_{j<=i} acc_matrix[i][j] )
@@ -42,6 +43,11 @@ DEFAULTS = dict(
     level_ratios=(1, 4, 16),
     level_order="slow_deep",   # slow_deep: deepest level slowest; fast_deep: reversed
     head_level="fast",         # which level the classifier head belongs to: "fast" or "slow"
+    # "val": train on (1 - val_fraction) of each class's training images and evaluate on the
+    #        held-out rest. Use this for ALL tuning (epochs, lr, lambda, ...).
+    # "test": train on the full training set, evaluate on the real test set. Final runs only.
+    eval_split="val",
+    val_fraction=0.1,
     seed=0,                    # controls weight init AND class order
     num_workers=2,
     synthetic_per_class=20,    # only used by benchmark="synthetic"
@@ -63,6 +69,10 @@ def make_cfg(**overrides):
         cfg["ewc_lambda"] = None
     if cfg["benchmark"] != "synthetic":
         cfg["synthetic_per_class"] = None
+    if cfg["eval_split"] not in ("val", "test"):
+        raise ValueError(cfg["eval_split"])
+    if cfg["eval_split"] == "test" or cfg["benchmark"] == "synthetic":
+        cfg["val_fraction"] = None
     return cfg
 
 
@@ -195,15 +205,67 @@ class _TensorClsDataset(torch.utils.data.Dataset):
         return self.x[i], self.targets[i]
 
 
+def _nc_benchmark():
+    try:
+        from avalanche.benchmarks import nc_benchmark
+    except ImportError:
+        from avalanche.benchmarks.scenarios.deprecated.generators import nc_benchmark
+    return nc_benchmark
+
+
+VAL_SPLIT_SEED = 12345  # fixed: the held-out images are identical for every run and seed
+
+
+def _cifar100_val_benchmark(cfg, paths):
+    """Split-CIFAR-100 whose evaluation stream is a held-out slice of the TRAINING set.
+
+    Stratified: val_fraction of every class (50 images/class at 0.1). The split
+    depends only on VAL_SPLIT_SEED, never on the run seed, so all arms and seeds
+    are tuned against the same held-out images. Held-out images use the eval
+    transform (no augmentation), exactly like the test set.
+    """
+    import copy
+
+    from avalanche.benchmarks.classic.ccifar100 import (
+        _default_cifar100_eval_transform, _default_cifar100_train_transform)
+    from torchvision.datasets import CIFAR100
+
+    full = CIFAR100(paths["data"], train=True, download=True)
+    targets = np.asarray(full.targets)
+    rng = np.random.RandomState(VAL_SPLIT_SEED)
+    val_idx = []
+    for c in range(100):
+        idx = np.flatnonzero(targets == c)
+        rng.shuffle(idx)
+        val_idx.extend(idx[:int(round(cfg["val_fraction"] * len(idx)))])
+    val_mask = np.zeros(len(targets), dtype=bool)
+    val_mask[val_idx] = True
+
+    def subset(mask):
+        ds = copy.copy(full)  # shallow copy of the torchvision dataset, then slice its arrays
+        ds.data = full.data[mask]
+        ds.targets = targets[mask].tolist()
+        return ds
+
+    train_ds, val_ds = subset(~val_mask), subset(val_mask)
+    bench = _nc_benchmark()(train_ds, val_ds, cfg["n_experiences"], task_labels=False,
+                            seed=cfg["seed"],
+                            train_transform=_default_cifar100_train_transform,
+                            eval_transform=_default_cifar100_eval_transform)
+    return bench
+
+
 def build_benchmark(cfg, paths):
     if cfg["benchmark"] == "split_cifar100":
-        from avalanche.benchmarks.classic import SplitCIFAR100
         assert 100 % cfg["n_experiences"] == 0, "100 must be divisible by n_experiences"
+        if cfg["eval_split"] == "val":
+            return _cifar100_val_benchmark(cfg, paths), 100
+        from avalanche.benchmarks.classic import SplitCIFAR100
         return SplitCIFAR100(n_experiences=cfg["n_experiences"], seed=cfg["seed"],
                              return_task_id=False, dataset_root=paths["data"]), 100
     if cfg["benchmark"] == "synthetic":
         # Random 3x32x32 images, 2 classes per experience. Plumbing test only.
-        from avalanche.benchmarks.scenarios.deprecated.generators import nc_benchmark
+        nc_benchmark = _nc_benchmark()
         n_cls = 2 * cfg["n_experiences"]
         g = torch.Generator().manual_seed(1234)
 
@@ -355,6 +417,6 @@ def run_experiment(cfg, paths):
     except BaseException:
         run.finish(exit_code=1)
         raise
-    return dict(summary, acc_matrix=acc, train_loss_per_exp=train_losses, n_params=n_params, optimizer_steps=counter.steps,
+    return dict(summary, eval_split=cfg["eval_split"], acc_matrix=acc, train_loss_per_exp=train_losses, n_params=n_params, optimizer_steps=counter.steps,
                 lr_per_group={str(pg["level"]): pg["lr"] for pg in pgs},
                 device=str(device), git_commit=_git_commit(), wandb_url=run.url)
