@@ -42,6 +42,10 @@ import wandb
 wandb.login(key=userdata.get("WANDB_API_KEY"))
 
 sys.path.insert(0, f"{CODE}/src")
+# Python caches imported modules for the whole kernel session, so after a git pull
+# a plain `import` would silently keep running the OLD code. Drop the cached copies.
+for _m in ["fyp_infra", "stage1_runner"]:
+    sys.modules.pop(_m, None)
 import torch
 from fyp_infra import setup_paths, run_sweep, run_id, load_result
 import stage1_runner as sr
