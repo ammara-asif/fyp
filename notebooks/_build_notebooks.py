@@ -51,9 +51,11 @@ from fyp_infra import setup_paths, run_sweep, run_id, load_result
 import stage1_runner as sr
 paths = setup_paths()   # -> /content/drive/MyDrive/fyp_nested_cl/{data,results,logs}
 print(paths)
-# Hard stop: a CPU run silently takes ~3x longer and its timings are useless for budgeting.
-assert torch.cuda.is_available(), "No GPU! Runtime -> Change runtime type -> T4 GPU, then restart."
-print("GPU:", torch.cuda.get_device_name(0))'''
+# Hard stop for training: a CPU run is ~12x slower and its timings are useless for budgeting.
+REQUIRE_GPU = True
+if REQUIRE_GPU:
+    assert torch.cuda.is_available(), "No GPU! Runtime -> Change runtime type -> T4 GPU, then restart."
+print("GPU:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "none (CPU runtime)")'''
 
 SUMMARY = r'''import numpy as np, pandas as pd
 rows = []
@@ -254,9 +256,10 @@ knowledge survives **inside** the network, even though class-IL accuracy on old 
   The thesis predicts that slow (deep, under `slow_deep`) levels lose less. That is what LLRD vs Flat tests here.
 
 Definitions are in `src/stage1_analysis.py`. Results go to `results/` (resumable, like training runs).
-Expect a few minutes per training run on GPU.
+Runs fine on a **CPU runtime** (no training, only forward passes + small logistic regressions):
+expect roughly 5-15 min per training run on CPU (estimate, not measured), a few minutes on GPU.
 """),
-    code(SETUP),
+    code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
 TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
 for r in TRAIN_RUNS:
