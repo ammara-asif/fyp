@@ -51,7 +51,9 @@ from fyp_infra import setup_paths, run_sweep, run_id, load_result
 import stage1_runner as sr
 paths = setup_paths()   # -> /content/drive/MyDrive/fyp_nested_cl/{data,results,logs}
 print(paths)
-print("GPU:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "NONE - switch runtime to GPU!")'''
+# Hard stop: a CPU run silently takes ~3x longer and its timings are useless for budgeting.
+assert torch.cuda.is_available(), "No GPU! Runtime -> Change runtime type -> T4 GPU, then restart."
+print("GPU:", torch.cuda.get_device_name(0))'''
 
 SUMMARY = r'''import numpy as np, pandas as pd
 rows = []
@@ -63,6 +65,9 @@ for cfg in CONFIGS:
     rows.append({**{k: cfg[k] for k in SHOW}, "run_id": r["run_id"],
                  "final_avg_acc": m["final_avg_acc"], "avg_forgetting": m["avg_forgetting"],
                  "avg_incremental_acc": m["avg_incremental_acc"],
+                 # mean of the diagonal: how well each task was learned when it was current.
+                 # Report next to forgetting: forgetting = peak - final, so it grows with this.
+                 "acc_just_learned": float(np.mean(np.diag(m["acc_matrix"]))),
                  "steps": m["optimizer_steps"], "n_params": m["n_params"], "minutes": r["wall_clock_s"] / 60})
 df = pd.DataFrame(rows); df'''
 
@@ -154,6 +159,51 @@ for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
     code(SUMMARY),
 ])
 
+write("stage1_lr_grid.ipynb", [
+    md("""
+# Stage 1 — Learning-rate grid (validation split)
+
+Tunes the base learning rate for each control arm with the **same budget**: lr ∈ {0.01, 0.03, 0.1},
+10 epochs, seed 0, evaluated on the held-out validation split (never the test set).
+
+**Selection rule (fixed before looking):** pick the lr with the highest `avg_incremental_acc`.
+`final_avg_acc` is useless here (with Naive training every old task ends at 0%, so it is just last-task / 20),
+and forgetting can't be the criterion because it rewards learning less.
+If the best lr is at the edge of the grid (0.01 or 0.1), extend the grid in that direction before choosing.
+
+For LLRD the tuned value is the **fast-level** lr; slower levels stay at lr/4 and lr/16.
+Tuning each arm separately is option (c) from the "matched effective lr" question. If your supervisor
+picks option (a) instead, LLRD just reuses Flat's best lr and you can skip the LLRD rows.
+
+The Flat lr=0.03 point is the 10-epoch run from the epoch sweep (same config, so it is reused, not re-run).
+"""),
+    code(SETUP),
+    code(r'''EPOCHS = 10
+LRS = [0.01, 0.03, 0.1]
+ARMS = {
+    "flat":      dict(lr_schedule="flat"),
+    "flat_llrd": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
+}
+
+def grid_cfg(arm, lr):
+    # The flat/0.03 point already exists as the epoch-sweep run; keeping its stage name
+    # gives the identical config -> identical run_id -> run_sweep reuses that result.
+    stage = "stage1_epoch_sweep" if (arm == "flat" and lr == 0.03) else "stage1_lr_grid"
+    return sr.make_cfg(stage=stage, strategy="naive", epochs=EPOCHS, seed=0, lr=lr,
+                       eval_split="val", **ARMS[arm])
+
+CONFIGS = [grid_cfg(arm, lr) for arm in ARMS for lr in LRS]
+SHOW = ["lr_schedule", "lr", "epochs", "eval_split"]
+for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
+    code("out = run_sweep(CONFIGS, sr.run_experiment, paths)"),
+    code(SUMMARY),
+    code(r'''best = df.loc[df.groupby("lr_schedule")["avg_incremental_acc"].idxmax(), ["lr_schedule", "lr", "avg_incremental_acc"]]
+print(best)
+for _, r in best.iterrows():
+    if r["lr"] in (min(LRS), max(LRS)):
+        print(f"WARNING: best lr for {r['lr_schedule']} is at the grid edge ({r['lr']}); extend the grid before choosing.")'''),
+])
+
 write("stage1_control.ipynb", [
     md("""
 # Stage 1 — Deflationary control: Flat vs Flat + LLRD
@@ -161,24 +211,31 @@ write("stage1_control.ipynb", [
 The comparison that decides the project (plan §1.2). Both arms use the same network, data order (seed),
 batch size and epochs, so parameter count and optimiser-step count are identical. The summary cell **asserts** this.
 LLRD: depth levels shallow→deep train at lr/1, lr/4, lr/16 (`slow_deep`). The head is in the fast level.
+Before running: settle the head placement and "matched effective lr" with your supervisor,
+and fill `LR` from `stage1_lr_grid`. Checkpoints (~90 MB/run) go to `MyDrive/fyp_nested_cl/checkpoints/`.
 Nesting arms A–D get added here after you approve the next step.
 """),
     code(SETUP),
-    code(r'''EPOCHS = None          # <-- set from the epoch sweep before running
+    code(r'''EPOCHS = 10            # from the epoch sweep
 SEEDS = [0, 1, 2]
-assert EPOCHS is not None, "set EPOCHS from the epoch sweep first"
+# Base (fast-level) lr per arm, from stage1_lr_grid. Fill these in before running.
+LR = {"flat": None, "flat_llrd": None}
+assert None not in LR.values(), "set LR from stage1_lr_grid first"
 ARMS = {
     "flat":      dict(lr_schedule="flat"),
     "flat_llrd": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
 }
-CONFIGS = [sr.make_cfg(stage="stage1_control", strategy="naive", epochs=EPOCHS, seed=s,
-                       eval_split="test", **arm)   # final comparison -> real test set
-           for s in SEEDS for arm in ARMS.values()]
-SHOW = ["lr_schedule", "level_ratios", "seed", "epochs"]
+CONFIGS = [sr.make_cfg(stage="stage1_control", strategy="naive", epochs=EPOCHS, seed=s, lr=LR[name],
+                       eval_split="test",          # final comparison -> real test set
+                       save_checkpoints=True,      # weights after every task, for CKA / probes later
+                       **arm)
+           for s in SEEDS for name, arm in ARMS.items()]
+SHOW = ["lr_schedule", "lr", "level_ratios", "seed", "epochs"]
 for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
     code("out = run_sweep(CONFIGS, sr.run_experiment, paths)"),
     code(SUMMARY),
     code(r'''done = df[df.get("status") != "not finished"] if "status" in df else df
 assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
-print(done.groupby("lr_schedule")[["final_avg_acc", "avg_forgetting", "avg_incremental_acc"]].agg(["mean", "std", "count"]))'''),
+print(done.groupby("lr_schedule")[["final_avg_acc", "avg_forgetting", "avg_incremental_acc"]].agg(["mean", "std", "count"]))
+print(done.groupby("lr_schedule")["acc_just_learned"].agg(["mean", "std"]))'''),
 ])

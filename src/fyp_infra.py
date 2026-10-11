@@ -34,6 +34,7 @@ def setup_paths(root=None):
         "data": os.path.join(root, "data"),
         "results": os.path.join(root, "results"),
         "logs": os.path.join(root, "logs"),
+        "checkpoints": os.path.join(root, "checkpoints"),
     }
     for p in paths.values():
         os.makedirs(p, exist_ok=True)

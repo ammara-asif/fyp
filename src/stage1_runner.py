@@ -51,6 +51,9 @@ DEFAULTS = dict(
     seed=0,                    # controls weight init AND class order
     num_workers=2,
     synthetic_per_class=20,    # only used by benchmark="synthetic"
+    # Save model weights after every experience to checkpoints/{run_id}/ (for CKA drift,
+    # linear probes, gradient cosine later). ~4.5 MB x 20 per run for the reduced ResNet-18.
+    save_checkpoints=False,
 )
 
 
@@ -73,6 +76,11 @@ def make_cfg(**overrides):
         raise ValueError(cfg["eval_split"])
     if cfg["eval_split"] == "test" or cfg["benchmark"] == "synthetic":
         cfg["val_fraction"] = None
+    if not cfg["save_checkpoints"]:
+        # Saving weights doesn't change training, so leave the key out when off.
+        # This keeps run_ids of runs made before this field existed unchanged
+        # (they are reused, e.g. the epoch-sweep run inside the lr grid).
+        del cfg["save_checkpoints"]
     return cfg
 
 
@@ -392,12 +400,24 @@ def run_experiment(cfg, paths):
                      reinit="finish_previous")
     run.summary["n_params"] = n_params
     T = len(bench.train_stream)
+    ckpt_dir = None
+    if cfg.get("save_checkpoints"):
+        ckpt_dir = os.path.join(paths["checkpoints"], rid)
+        os.makedirs(ckpt_dir, exist_ok=True)
+    classes_per_exp = [sorted(int(c) for c in e.classes_in_this_experience)
+                       for e in bench.train_stream]
     acc, train_losses = [], []
     try:
         for i, exp in enumerate(bench.train_stream):
             guard.loss_sum, guard.n = 0.0, 0
             strategy.train(exp, num_workers=cfg["num_workers"])
             train_losses.append(guard.loss_sum / max(guard.n, 1))
+            if ckpt_dir is not None:
+                # Weights after training experience i (incl. BatchNorm stats), written
+                # atomically so a disconnect can't leave a truncated file.
+                p = os.path.join(ckpt_dir, f"after_exp{i:02d}.pt")
+                torch.save(model.state_dict(), p + ".tmp")
+                os.replace(p + ".tmp", p)
             res = strategy.eval(bench.test_stream, num_workers=cfg["num_workers"])
             row = [100.0 * res[f"Top1_Acc_Exp/eval_phase/test_stream/Task000/Exp{j:03d}"]
                    for j in range(T)]
@@ -417,6 +437,8 @@ def run_experiment(cfg, paths):
     except BaseException:
         run.finish(exit_code=1)
         raise
-    return dict(summary, eval_split=cfg["eval_split"], acc_matrix=acc, train_loss_per_exp=train_losses, n_params=n_params, optimizer_steps=counter.steps,
+    return dict(summary, eval_split=cfg["eval_split"], acc_matrix=acc,
+                train_loss_per_exp=train_losses, classes_per_exp=classes_per_exp,
+                checkpoint_dir=ckpt_dir, n_params=n_params, optimizer_steps=counter.steps,
                 lr_per_group={str(pg["level"]): pg["lr"] for pg in pgs},
                 device=str(device), git_commit=_git_commit(), wandb_url=run.url)
