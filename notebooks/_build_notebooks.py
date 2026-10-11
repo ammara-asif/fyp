@@ -44,7 +44,7 @@ wandb.login(key=userdata.get("WANDB_API_KEY"))
 sys.path.insert(0, f"{CODE}/src")
 # Python caches imported modules for the whole kernel session, so after a git pull
 # a plain `import` would silently keep running the OLD code. Drop the cached copies.
-for _m in ["fyp_infra", "stage1_runner"]:
+for _m in ["fyp_infra", "stage1_runner", "stage1_analysis"]:
     sys.modules.pop(_m, None)
 import torch
 from fyp_infra import setup_paths, run_sweep, run_id, load_result
@@ -238,4 +238,64 @@ for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
 assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
 print(done.groupby("lr_schedule")[["final_avg_acc", "avg_forgetting", "avg_incremental_acc"]].agg(["mean", "std", "count"]))
 print(done.groupby("lr_schedule")["acc_just_learned"].agg(["mean", "std"]))'''),
+])
+
+write("stage1_analysis.ipynb", [
+    md("""
+# Stage 1: Checkpoint analysis (task-IL accuracy + linear probes)
+
+No training. This loads the per-task checkpoints saved by `stage1_control` and asks whether old-task
+knowledge survives **inside** the network, even though class-IL accuracy on old tasks is 0% for every arm.
+
+- **Task-IL accuracy:** classify each old task's test images using only that task's 5 classes.
+  If this stays high, the features still separate old classes and the head bias causes the 0%.
+- **Linear probe per level (layer1 / layer3 / layer4):** fit a fresh linear classifier on each level's
+  features for task *j*, right after learning *j* and again at the end. **Probe forgetting** = the drop.
+  The thesis predicts that slow (deep, under `slow_deep`) levels lose less. That is what LLRD vs Flat tests here.
+
+Definitions are in `src/stage1_analysis.py`. Results go to `results/` (resumable, like training runs).
+Expect a few minutes per training run on GPU.
+"""),
+    code(SETUP),
+    code(r"""import stage1_analysis as sa
+TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
+for r in TRAIN_RUNS:
+    c = r["config"]; print(r["run_id"], c["lr_schedule"], "lr", c["lr"], "seed", c["seed"])
+ACFGS = sa.analysis_configs(TRAIN_RUNS)"""),
+    code("out = run_sweep(ACFGS, sa.analyze_run, paths)"),
+    code(r"""import numpy as np, pandas as pd
+rows = []
+for a in ACFGS:
+    r = load_result(a, paths)
+    if r is None: continue
+    m = r["metrics"]; c = m["train_config"]
+    row = {"arm": c["lr_schedule"], "lr": c["lr"], "seed": c["seed"],
+           "til_final_avg_acc": m["til_final_avg_acc"], "til_avg_forgetting": m["til_avg_forgetting"]}
+    for l, name in enumerate(m["level_modules"]):
+        row[f"probe_final/{name}"] = m["probe_final_avg"][l]
+        row[f"probe_forgetting/{name}"] = m["probe_forgetting"][l]
+    rows.append(row)
+adf = pd.DataFrame(rows)
+display(adf)
+summary = adf.drop(columns="seed").groupby(["arm", "lr"]).agg(["mean", "std", "count"])
+display(summary.T)"""),
+    md("""
+**How to read it.**
+- `til_final_avg_acc` well above 20% (chance for 5-way) means the features still separate old classes.
+- `probe_forgetting/<level>`: lower means that level kept more old-task information. If LLRD's slow levels
+  (layer3, layer4) show clearly lower probe forgetting than Flat's, beyond the seed std, then slowing *does*
+  protect knowledge and class-IL accuracy was hiding it. If not, LLRD really behaves like Flat.
+"""),
+    code(r"""import matplotlib.pyplot as plt
+levels = [k.split("/")[1] for k in adf.columns if k.startswith("probe_forgetting/")]
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+for (arm, lr), g in adf.groupby(["arm", "lr"]):
+    lab = f"{arm} (lr {lr})"
+    for ax, key in zip(axes, ["probe_forgetting", "probe_final"]):
+        vals = g[[f"{key}/{l}" for l in levels]]
+        ax.errorbar(levels, vals.mean(), yerr=vals.std(), marker="o", capsize=4, label=lab)
+axes[0].set(title="Linear-probe forgetting per level (lower = kept more)", ylabel="points")
+axes[1].set(title="Final linear-probe accuracy on all tasks (5-way, chance 20%)", ylabel="%")
+for ax in axes: ax.legend(); ax.grid(alpha=.3)
+plt.show()"""),
 ])
