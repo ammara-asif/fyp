@@ -44,7 +44,7 @@ wandb.login(key=userdata.get("WANDB_API_KEY"))
 sys.path.insert(0, f"{CODE}/src")
 # Python caches imported modules for the whole kernel session, so after a git pull
 # a plain `import` would silently keep running the OLD code. Drop the cached copies.
-for _m in ["fyp_infra", "stage1_runner", "stage1_analysis"]:
+for _m in ["fyp_infra", "stage1_runner", "stage1_analysis", "stage1_drift_diagnostic"]:
     sys.modules.pop(_m, None)
 import torch
 from fyp_infra import setup_paths, run_sweep, run_id, load_result
@@ -301,4 +301,93 @@ axes[0].set(title="Linear-probe forgetting per level (lower = kept more)", ylabe
 axes[1].set(title="Final linear-probe accuracy on all tasks (5-way, chance 20%)", ylabel="%")
 for ax in axes: ax.legend(); ax.grid(alpha=.3)
 plt.show()"""),
+])
+
+write("stage1_drift_diagnostic.ipynb", [
+    md("""
+# Stage 1: Drift diagnostic. Where does a slow level's drift come from?
+
+No training; CPU runtime is fine. Under Flat + LLRD, layer4 trains ~10x slower than under Flat, yet its
+linear-probe forgetting is the same (~10 points). This notebook splits each level's drift into:
+
+- **own**: only that level's weights (and its BN stats) changed, inputs held at the old checkpoint
+- **inherited**: only the upstream levels changed, the level itself held at the old checkpoint
+- **interaction**: what is left (the two changes are not simply additive)
+- **BN recovery**: how much probe accuracy comes back when the final model's BatchNorm statistics are
+  re-estimated on the old task's images (diagnostic only; it uses old data)
+
+It does this by "stitching" checkpoints: old upstream + new level, and new upstream + old level.
+Definitions are in `src/stage1_drift_diagnostic.py`. Rough cost: 10-20 min per training run on CPU (estimate).
+
+**Predictions, written before running:**
+1. Under LLRD, layer4's **own** drift is small and most of its drift is **inherited** from the faster levels above it.
+2. Under Flat, own drift is a larger share than under LLRD.
+3. If BN recovery is large in both arms, BatchNorm statistics are a shared drift source that no learning-rate
+   schedule can fix, and every nested variant needs a BN policy for its slow levels.
+"""),
+    code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
+    code(r"""import stage1_analysis as sa
+import stage1_drift_diagnostic as dd
+TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
+for r in TRAIN_RUNS:
+    c = r["config"]; print(r["run_id"], c["lr_schedule"], "lr", c["lr"], "seed", c["seed"])
+DCFGS = dd.diagnostic_configs(TRAIN_RUNS)"""),
+    code("out = run_sweep(DCFGS, dd.diagnose_run, paths)"),
+    code(r"""import numpy as np, pandas as pd
+PARTS = ["total_drift", "own_drift", "inherited_drift", "interaction", "bn_recovery", "bn_procedure_effect"]
+rows = []
+for a in DCFGS:
+    r = load_result(a, paths)
+    if r is None: continue
+    m = r["metrics"]; c = m["train_config"]
+    for l, name in enumerate(m["level_modules"]):
+        rows.append({"arm": c["lr_schedule"], "lr": c["lr"], "seed": c["seed"], "level": name,
+                     **{p: m[p][l] for p in PARTS}})
+ddf = pd.DataFrame(rows)
+summary = ddf.drop(columns="seed").groupby(["arm", "lr", "level"]).agg(["mean", "std"]).round(2)
+display(summary)"""),
+    md("""
+**Consistency check.** `total_drift` uses the same probe protocol on the same checkpoints as
+`stage1_analysis`, so it should equal that notebook's `probe_forgetting` (difference ~0). A large difference
+means something in the stitching code is wrong, and the decomposition should not be trusted.
+"""),
+    code(r"""diffs = []
+for a in DCFGS:
+    r = load_result(a, paths)
+    ra = load_result({"analysis": sa.ANALYSIS_VERSION, "train_run_id": a["train_run_id"]}, paths)
+    if r is None or ra is None: continue
+    diffs += [abs(x - y) for x, y in zip(r["metrics"]["total_drift"], ra["metrics"]["probe_forgetting"])]
+print(f"max |total_drift - probe_forgetting| = {max(diffs):.3f} points over {len(diffs)} values" if diffs
+      else "no stage1_analysis results found to compare against")"""),
+    code(r"""import matplotlib.pyplot as plt
+levels = list(dict.fromkeys(ddf["level"]))
+arms = list(dict.fromkeys(zip(ddf["arm"], ddf["lr"])))
+comps = ["own_drift", "inherited_drift", "interaction"]
+fig, axes = plt.subplots(1, len(arms) + 1, figsize=(6 * (len(arms) + 1), 4), sharey=True)
+for ax, (arm, lr) in zip(axes, arms):
+    g = ddf[(ddf["arm"] == arm) & (ddf["lr"] == lr)]
+    w = 0.25
+    for k, comp in enumerate(comps):
+        stats = g.groupby("level")[comp].agg(["mean", "std"]).reindex(levels)
+        ax.bar(np.arange(len(levels)) + (k - 1) * w, stats["mean"], w, yerr=stats["std"], capsize=3, label=comp)
+    tot = g.groupby("level")["total_drift"].mean().reindex(levels)
+    ax.scatter(np.arange(len(levels)), tot, color="black", zorder=3, label="total")
+    ax.set(title=f"{arm} (lr {lr}): drift components", xticks=range(len(levels)), xticklabels=levels, ylabel="probe points")
+    ax.axhline(0, color="grey", lw=.8); ax.legend(); ax.grid(alpha=.3, axis="y")
+ax = axes[-1]
+for k, (arm, lr) in enumerate(arms):
+    g = ddf[(ddf["arm"] == arm) & (ddf["lr"] == lr)]
+    stats = g.groupby("level")["bn_recovery"].agg(["mean", "std"]).reindex(levels)
+    ax.bar(np.arange(len(levels)) + (k - 0.5) * 0.35, stats["mean"], 0.35, yerr=stats["std"], capsize=3, label=f"{arm} (lr {lr})")
+ax.set(title="BN recovery (old-task BN stats put back)", xticks=range(len(levels)), xticklabels=levels)
+ax.axhline(0, color="grey", lw=.8); ax.legend(); ax.grid(alpha=.3, axis="y")
+plt.tight_layout(); plt.show()"""),
+    md("""
+**How to read it.**
+- Compare `own_drift` with `inherited_drift` at layer3 and layer4, per arm. Prediction 1 holds if LLRD's
+  layer4 bar is mostly *inherited*.
+- `bn_recovery` close to `total_drift` means BN statistics explain most of the drift. Close to 0 means BN is not the cause.
+  Only trust it if `bn_procedure_effect` is near 0.
+- Differences smaller than the seed std (error bars) are not meaningful with 3 seeds.
+"""),
 ])
