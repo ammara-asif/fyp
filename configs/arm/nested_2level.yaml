@@ -1,0 +1,5 @@
+# nested_2level.yaml — depth ablation
+name: nested_2level
+rule: periodic
+nesting: {depth: 2, periods: [1, 16], ordering: slow_deep}
+rule_kwargs: {accumulate: mean}

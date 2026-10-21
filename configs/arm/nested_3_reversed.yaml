@@ -1,0 +1,5 @@
+# nested_3_reversed.yaml — fast-deep instead of slow-deep (§7.4)
+name: nested_3_reversed
+rule: periodic
+nesting: {depth: 3, periods: [1, 4, 16], ordering: fast_deep}
+rule_kwargs: {accumulate: mean}

@@ -1,0 +1,5 @@
+# nested_d.yaml — nested objectives (surprise minimisation, double backward)
+name: nested_d
+rule: nested_objectives
+nesting: {depth: 3, periods: [1, 4, 16], ordering: slow_deep}
+rule_kwargs: {surprise_weight: 0.1, accumulate: mean}

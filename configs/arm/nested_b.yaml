@@ -1,0 +1,5 @@
+# nested_b.yaml — per-level LR (3 slabs, ratio 1/k)
+name: nested_b
+rule: per_level_lr
+nesting: {depth: 3, periods: [1, 4, 16], lr_ratios: [1.0, 0.25, 0.0625], ordering: slow_deep}
+rule_kwargs: {}

@@ -1,0 +1,5 @@
+# nested_c.yaml — EMA coupling
+name: nested_c
+rule: ema
+nesting: {depth: 3, periods: [1, 4, 16], ema_taus: [0.0, 0.75, 0.9375], ordering: slow_deep}
+rule_kwargs: {consistency_weight: 0.1}

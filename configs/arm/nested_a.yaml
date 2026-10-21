@@ -1,0 +1,5 @@
+# nested_a.yaml — periodic stepping
+name: nested_a
+rule: periodic
+nesting: {depth: 3, periods: [1, 4, 16], ordering: slow_deep}
+rule_kwargs: {accumulate: mean}

@@ -1,0 +1,42 @@
+defaults:
+  - arm: nested_a
+  - _self_
+
+seed: 0
+device: cuda
+
+benchmark:
+  n_experiences: 20
+  fixed_order: true          # identical class order across arms
+
+model:
+  nf: 20
+  num_classes: 100
+
+optim:                       # Mammoth seq-cifar100 SGD defaults
+  lr: 0.03
+  momentum: 0.0
+  weight_decay: 0.0
+  reset_per_exp: true
+
+train:
+  epochs: 50
+  mb_size: 32
+  eval_mb_size: 256
+
+probe:
+  enabled: true
+  n_cka: 512
+  n_probe_train: 1000
+  n_probe_test: 500
+
+wandb:
+  enabled: false
+  project: adnn-stage1
+
+hydra:
+  run:
+    dir: results/${arm.name}/seed${seed}
+  sweep:
+    dir: results/sweep
+    subdir: ${arm.name}/seed${seed}
