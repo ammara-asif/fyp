@@ -84,6 +84,17 @@ def make_cfg(**overrides):
     return cfg
 
 
+def arm_label(cfg):
+    """Short arm name for tables: 'flat', 'llrd_slow_deep', 'llrd_fast_deep' (+ ratios if not 1-4-16).
+    Display only; it does not change any config or run_id."""
+    if cfg["lr_schedule"] == "flat":
+        return "flat"
+    lab = f"llrd_{cfg['level_order']}"
+    if list(cfg["level_ratios"]) != [1, 4, 16]:
+        lab += "_" + "-".join(str(r) for r in cfg["level_ratios"])
+    return lab
+
+
 # ----------------------------------------------------------------------------- models
 
 class BasicBlock(nn.Module):

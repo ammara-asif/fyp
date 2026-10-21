@@ -64,7 +64,7 @@ for cfg in CONFIGS:
     if r is None:
         rows.append({**{k: cfg[k] for k in SHOW}, "status": "not finished"}); continue
     m = r["metrics"]
-    rows.append({**{k: cfg[k] for k in SHOW}, "run_id": r["run_id"],
+    rows.append({"arm": sr.arm_label(cfg), **{k: cfg[k] for k in SHOW}, "run_id": r["run_id"],
                  "final_avg_acc": m["final_avg_acc"], "avg_forgetting": m["avg_forgetting"],
                  "avg_incremental_acc": m["avg_incremental_acc"],
                  # mean of the diagonal: how well each task was learned when it was current.
@@ -165,15 +165,20 @@ write("stage1_lr_grid.ipynb", [
     md("""
 # Stage 1 — Learning-rate grid (validation split)
 
-Tunes the base learning rate for each control arm with the **same budget**: lr ∈ {0.01, 0.03, 0.1},
-10 epochs, seed 0, evaluated on the held-out validation split (never the test set).
+Tunes the base learning rate for each control arm: 10 epochs, seed 0, evaluated on the held-out
+validation split (never the test set). `GRID` lists every lr tried per arm; finished runs are skipped,
+so the table always shows each arm's whole grid.
+
+Arms: `flat`, `flat_llrd` (slow-deep: layer4 slowest) and `flat_llrd_rev` (fast-deep: stem+layer1 slowest,
+layer4 at the full lr). The reversed arm was added after the drift diagnostic showed that, under slow-deep,
+layer4's drift is ~90% inherited from the faster layers below it.
 
 **Selection rule (fixed before looking):** pick the lr with the highest `avg_incremental_acc`.
 `final_avg_acc` is useless here (with Naive training every old task ends at 0%, so it is just last-task / 20),
 and forgetting can't be the criterion because it rewards learning less.
-If the best lr is at the edge of the grid (0.01 or 0.1), extend the grid in that direction before choosing.
+If an arm's best lr is at the edge of its own grid, extend that arm's grid in that direction before choosing.
 
-For LLRD the tuned value is the **fast-level** lr; slower levels stay at lr/4 and lr/16.
+For both LLRD arms the tuned value is the **fast-level** lr; slower levels stay at lr/4 and lr/16.
 Tuning each arm separately is option (c) from the "matched effective lr" question. If your supervisor
 picks option (a) instead, LLRD just reuses Flat's best lr and you can skip the LLRD rows.
 
@@ -181,10 +186,16 @@ The Flat lr=0.03 point is the 10-epoch run from the epoch sweep (same config, so
 """),
     code(SETUP),
     code(r'''EPOCHS = 10
-LRS = [0.01, 0.03, 0.1]
 ARMS = {
-    "flat":      dict(lr_schedule="flat"),
-    "flat_llrd": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
+    "flat":          dict(lr_schedule="flat"),
+    "flat_llrd":     dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
+    "flat_llrd_rev": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="fast_deep"),
+}
+# Every lr tried per arm (already-finished runs are skipped). Extend a list if its best is at an edge.
+GRID = {
+    "flat":          [0.01, 0.03, 0.1, 0.2, 0.3],
+    "flat_llrd":     [0.01, 0.03, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9],
+    "flat_llrd_rev": [0.03, 0.1, 0.2, 0.3, 0.5],   # new: 5 runs, ~45 GPU-min (estimate)
 }
 
 def grid_cfg(arm, lr):
@@ -194,25 +205,29 @@ def grid_cfg(arm, lr):
     return sr.make_cfg(stage=stage, strategy="naive", epochs=EPOCHS, seed=0, lr=lr,
                        eval_split="val", **ARMS[arm])
 
-CONFIGS = [grid_cfg(arm, lr) for arm in ARMS for lr in LRS]
-SHOW = ["lr_schedule", "lr", "epochs", "eval_split"]
-for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
+CONFIGS = [grid_cfg(arm, lr) for arm in ARMS for lr in GRID[arm]]
+SHOW = ["lr", "epochs", "eval_split"]
+for c in CONFIGS: print(run_id(c), sr.arm_label(c), {k: c[k] for k in SHOW})'''),
     code("out = run_sweep(CONFIGS, sr.run_experiment, paths)"),
     code(SUMMARY),
-    code(r'''best = df.loc[df.groupby("lr_schedule")["avg_incremental_acc"].idxmax(), ["lr_schedule", "lr", "avg_incremental_acc"]]
+    code(r'''LABEL = {sr.arm_label(sr.make_cfg(**a)): name for name, a in ARMS.items()}   # table label -> ARMS key
+best = df.loc[df.groupby("arm")["avg_incremental_acc"].idxmax(), ["arm", "lr", "avg_incremental_acc", "acc_just_learned"]]
 print(best)
 for _, r in best.iterrows():
-    if r["lr"] in (min(LRS), max(LRS)):
-        print(f"WARNING: best lr for {r['lr_schedule']} is at the grid edge ({r['lr']}); extend the grid before choosing.")'''),
+    lrs = GRID[LABEL[r["arm"]]]
+    if r["lr"] in (min(lrs), max(lrs)):
+        print(f"WARNING: best lr for {r['arm']} is at the edge of its grid ({r['lr']}); extend it before choosing.")'''),
 ])
 
 write("stage1_control.ipynb", [
     md("""
-# Stage 1 — Deflationary control: Flat vs Flat + LLRD
+# Stage 1 — Deflationary control: Flat vs Flat + LLRD (slow-deep and fast-deep)
 
 The comparison that decides the project (plan §1.2). Both arms use the same network, data order (seed),
 batch size and epochs, so parameter count and optimiser-step count are identical. The summary cell **asserts** this.
-LLRD: depth levels shallow→deep train at lr/1, lr/4, lr/16 (`slow_deep`). The head is in the fast level.
+`flat_llrd` (slow-deep): shallow→deep at lr/1, lr/4, lr/16. `flat_llrd_rev` (fast-deep): shallow→deep at lr/16, lr/4, lr/1.
+The head is in the fast level in both. An arm whose `LR` is still `None` is skipped, so you can run the others first.
+The earlier Flat runs at lr 0.3 stay on Drive as a record; this notebook runs Flat at the selected lr 0.1.
 Before running: settle the head placement and "matched effective lr" with your supervisor,
 and fill `LR` from `stage1_lr_grid`. Checkpoints (~90 MB/run) go to `MyDrive/fyp_nested_cl/checkpoints/`.
 Nesting arms A–D get added here after you approve the next step.
@@ -221,25 +236,27 @@ Nesting arms A–D get added here after you approve the next step.
     code(r'''EPOCHS = 10            # from the epoch sweep
 SEEDS = [0, 1, 2]
 # Base (fast-level) lr per arm, from stage1_lr_grid. Fill these in before running.
-LR = {"flat": None, "flat_llrd": None}
-assert None not in LR.values(), "set LR from stage1_lr_grid first"
+LR = {"flat": 0.1, "flat_llrd": 0.5, "flat_llrd_rev": None}   # rev: fill in from stage1_lr_grid
 ARMS = {
-    "flat":      dict(lr_schedule="flat"),
-    "flat_llrd": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
+    "flat":          dict(lr_schedule="flat"),
+    "flat_llrd":     dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="slow_deep"),
+    "flat_llrd_rev": dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="fast_deep"),
 }
+for name in ARMS:
+    if LR[name] is None: print(f"skipping {name}: set LR['{name}'] from stage1_lr_grid first")
 CONFIGS = [sr.make_cfg(stage="stage1_control", strategy="naive", epochs=EPOCHS, seed=s, lr=LR[name],
                        eval_split="test",          # final comparison -> real test set
                        save_checkpoints=True,      # weights after every task, for CKA / probes later
                        **arm)
-           for s in SEEDS for name, arm in ARMS.items()]
-SHOW = ["lr_schedule", "lr", "level_ratios", "seed", "epochs"]
-for c in CONFIGS: print(run_id(c), {k: c[k] for k in SHOW})'''),
+           for s in SEEDS for name, arm in ARMS.items() if LR[name] is not None]
+SHOW = ["lr", "seed", "epochs"]
+for c in CONFIGS: print(run_id(c), sr.arm_label(c), {k: c[k] for k in SHOW})'''),
     code("out = run_sweep(CONFIGS, sr.run_experiment, paths)"),
     code(SUMMARY),
     code(r'''done = df[df.get("status") != "not finished"] if "status" in df else df
 assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
-print(done.groupby("lr_schedule")[["final_avg_acc", "avg_forgetting", "avg_incremental_acc"]].agg(["mean", "std", "count"]))
-print(done.groupby("lr_schedule")["acc_just_learned"].agg(["mean", "std"]))'''),
+print(done.groupby(["arm", "lr"])[["final_avg_acc", "avg_forgetting", "avg_incremental_acc"]].agg(["mean", "std", "count"]))
+print(done.groupby(["arm", "lr"])["acc_just_learned"].agg(["mean", "std"]))'''),
 ])
 
 write("stage1_analysis.ipynb", [
@@ -263,7 +280,7 @@ expect roughly 5-15 min per training run on CPU (estimate, not measured), a few 
     code(r"""import stage1_analysis as sa
 TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
 for r in TRAIN_RUNS:
-    c = r["config"]; print(r["run_id"], c["lr_schedule"], "lr", c["lr"], "seed", c["seed"])
+    c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
 ACFGS = sa.analysis_configs(TRAIN_RUNS)"""),
     code("out = run_sweep(ACFGS, sa.analyze_run, paths)"),
     code(r"""import numpy as np, pandas as pd
@@ -272,7 +289,7 @@ for a in ACFGS:
     r = load_result(a, paths)
     if r is None: continue
     m = r["metrics"]; c = m["train_config"]
-    row = {"arm": c["lr_schedule"], "lr": c["lr"], "seed": c["seed"],
+    row = {"arm": sr.arm_label(c), "lr": c["lr"], "seed": c["seed"],
            "til_final_avg_acc": m["til_final_avg_acc"], "til_avg_forgetting": m["til_avg_forgetting"]}
     for l, name in enumerate(m["level_modules"]):
         row[f"probe_final/{name}"] = m["probe_final_avg"][l]
@@ -324,13 +341,21 @@ Definitions are in `src/stage1_drift_diagnostic.py`. Rough cost: 10-20 min per t
 2. Under Flat, own drift is a larger share than under LLRD.
 3. If BN recovery is large in both arms, BatchNorm statistics are a shared drift source that no learning-rate
    schedule can fix, and every nested variant needs a BN policy for its slow levels.
+
+Result of the first run (Flat at lr 0.3, slow-deep LLRD at lr 0.5): 1 held (layer4 drift ~90% inherited),
+2 held weakly, 3 did not hold (BN recovery ~0).
+
+**Predictions for `llrd_fast_deep`, written before its runs:**
+4. The slow level (stem+layer1) has no upstream, so its drift is all own drift and stays small.
+5. layer3's inherited drift is lower than under slow-deep, because the levels feeding it are now slower.
+6. layer4 is now the fast level: its own drift rises, and its total probe forgetting stays at or above ~10 points.
 """),
     code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
 import stage1_drift_diagnostic as dd
 TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
 for r in TRAIN_RUNS:
-    c = r["config"]; print(r["run_id"], c["lr_schedule"], "lr", c["lr"], "seed", c["seed"])
+    c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
 DCFGS = dd.diagnostic_configs(TRAIN_RUNS)"""),
     code("out = run_sweep(DCFGS, dd.diagnose_run, paths)"),
     code(r"""import numpy as np, pandas as pd
@@ -341,7 +366,7 @@ for a in DCFGS:
     if r is None: continue
     m = r["metrics"]; c = m["train_config"]
     for l, name in enumerate(m["level_modules"]):
-        rows.append({"arm": c["lr_schedule"], "lr": c["lr"], "seed": c["seed"], "level": name,
+        rows.append({"arm": sr.arm_label(c), "lr": c["lr"], "seed": c["seed"], "level": name,
                      **{p: m[p][l] for p in PARTS}})
 ddf = pd.DataFrame(rows)
 summary = ddf.drop(columns="seed").groupby(["arm", "lr", "level"]).agg(["mean", "std"]).round(2)

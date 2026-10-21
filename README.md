@@ -108,6 +108,11 @@ All numbers come from the result files on Drive. The executed notebooks are in `
 - Deeper layers forget more.
 - **LLRD does not protect its slow levels**: layer4 trains about 10× slower than in Flat, yet its probe forgetting is the same.
 
+**Drift diagnostic (same 6 runs, checkpoint stitching).**
+- Layer4's probe drift is about 90% *inherited* from the faster layers below it. Its own weights account for only 0.6–1.0 of the 10 points, in both arms.
+- Re-estimating BatchNorm statistics recovers about 0.
+- So, under slow-deep ordering, slowing a level does not protect it. Next: reversed (fast-deep) LLRD as a third control arm.
+
 ## Open decisions (for the supervisor)
 
 1. **Gate 1 criterion.** Class-IL forgetting can't separate the arms. The proposal is to judge Gate 1 on **per-level probe forgetting**, at matched accuracy on new tasks.
@@ -119,6 +124,6 @@ All numbers come from the result files on Drive. The executed notebooks are in `
 
 ## Next steps
 
-1. Re-run Flat at lr 0.1, then re-run the analysis.
+1. Learning-rate grid for fast-deep LLRD, then the control with Flat at lr 0.1 plus fast-deep LLRD, then the analysis and drift notebooks.
 2. Build the nested learner (variants A–D), sharing the same three-level split.
 3. Compare the nested variants against the Flat + LLRD probe-forgetting bar above.
