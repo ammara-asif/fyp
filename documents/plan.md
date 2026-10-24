@@ -276,3 +276,95 @@ If you are behind at week 20, cut in this order:
 
 Do not cut: the Stage 1 control, the plastic-versus-frozen ablation, the SEMA comparison, or the time-to-saturation check. Those four are what make the result interpretable.
 
+---
+
+## **Revisions after the Stage 1 control (2026-10-24)**
+
+Everything above is the original plan and is left as written. This section records what changed after Gate 0 and the first Stage 1 control runs. Items marked **FACT** need no decision. Items marked **PROPOSED** are my suggested wording and are **pending supervisor agreement**; until then, the original text above applies.
+
+### R1. Terminology (FACT)
+
+The plan's "slow-deep" / "fast-deep" was ambiguous about which end of the network is slow. From now on:
+
+| Term | Meaning | Config |
+| ----- | ----- | ----- |
+| slow-deep (main) | Levels nearest the **input** update slowest; the output-side level (layer4 + head) is fastest | `slow_side: input` |
+| fast-deep (reversed arm) | Levels nearest the **output** update slowest | `slow_side: output` |
+
+This matches proposal §4.1 (slow levels hold stable general structure, which sits in early layers) and standard layer-wise decay practice. **Caution on earlier runs:** the first Stage 1 code used the opposite meaning. Its result labels `llrd_slow_deep` (lr 0.5) are `slow_side: output`, and `llrd_fast_deep` (lr 0.6) are `slow_side: input`.
+
+### R2. Setup values now fixed (FACT)
+
+- Environment: Python 3.13 on Colab (not 3.10); `faiss-cpu` is deferred to Stage 2, where it is first needed; `avalanche-lib` 0.6.0. The other versions still need pinning from Colab's `pip freeze`.
+- Configs: arm definitions live as YAML files in `configs/arm/`; every run is a config dict identified by a hash of its contents, saved as JSON on Drive and logged to wandb.
+- **Gate 0 passed:** EWC (λ = 1, 1 epoch) ran end to end; two seeds agreed within about 0.5 points. λ = 100 diverged to NaN, so a NaN guard and gradient clipping (norm 1.0, all arms) were added.
+- Benchmark: Split-CIFAR-100, 20 tasks × 5 classes, class-IL (one 100-way head), reduced ResNet-18 (width 20, 1.11M parameters), SGD, batch 32, no momentum, **10 epochs per task** (epoch sweep on validation).
+- All tuning uses a fixed stratified 10% validation slice of the training set; the test set is used only for final runs. Exploration uses 3 seeds, final configurations 5.
+- Each arm's base learning rate is tuned on validation with a pre-set rule (highest average incremental accuracy); the grid is extended whenever the best value sits at its edge.
+
+### R3. Findings that motivate the changes (FACT, 3 seeds, test set, mean ± std)
+
+1. **Class-IL forgetting cannot separate methods here.** With plain sequential training every old task ends at exactly 0% in every arm, so forgetting equals peak accuracy (about 82 in all arms).
+2. **Most old-task knowledge survives in the features.** Linear probes still reach 66-79% on old tasks (chance 20%), so most forgetting sits in the classifier head.
+3. **Probe forgetting by level** (points; lower = kept more):
+
+| Arm | layer1 | layer3 | layer4 |
+| ----- | ----- | ----- | ----- |
+| Flat, lr 0.1 | 2.0 ± 0.5 | 5.8 ± 0.6 | 8.4 ± 0.5 |
+| Flat + LLRD, `slow_side: output`, lr 0.5 | 1.3 ± 0.9 | 7.0 ± 1.2 | 10.0 ± 1.4 |
+| Flat + LLRD, `slow_side: input`, lr 0.6* | 1.3 ± 0.8 | 5.8 ± 0.9 | 9.5 ± 0.5 |
+
+\*lr 0.6 was not on the validation grid (the grid stopped at 0.5, its best value); this is an open protocol issue.
+
+4. **Drift diagnostic.** Splitting each level's drift by stitching old and new checkpoints: layer4's drift is about 90% *inherited* from the layers feeding it, in every arm and both orientations, and its own weights account for only 0.6-1.3 points. A level's own drift is roughly independent of its learning rate (layer3: 4.7-5.2 points across arms). Re-estimating BatchNorm statistics on old data recovers about 0. Own and inherited effects are not additive (negative interaction), so the shares are approximate.
+5. **Flat's own learning rate moves probe forgetting** (layer4: 8.4 at lr 0.1 vs 10.0 at lr 0.3, same accuracy on the just-learned task). Flat at its tuned rate is therefore the bar to beat, not only LLRD.
+6. **Hypothesis, not yet tested:** with about 790 steps per task, every level converges to what the new task needs whatever its step size, so timescales of 1/4/16 steps are too short to protect anything.
+
+### R4. Changes to Stage 1 (PROPOSED, pending supervisor)
+
+**Gate 1 (§1.2).** Replace "beat Flat + LLRD on forgetting at matched everything" with: *does any nesting variant show lower linear-probe forgetting in its slow levels than Flat at its tuned learning rate and Flat + LLRD, by more than [margin fixed before the nested runs, for example one seed standard deviation over 5 seeds], while accuracy on the just-learned task stays within [about 1 point]?* The Yes/No branches are unchanged.
+
+**"Measured" (§1.2).** Two tiers:
+- *Decides Gate 1:* per-level probe forgetting, plus accuracy on the just-learned task as the plasticity check.
+- *Reported as context:* class-IL average accuracy and forgetting, task-IL accuracy, CKA drift, gradient cosine, the drift decomposition.
+
+**"Matched across all arms" (§1.2).** Define terms:
+- Effective learning rate = each arm's base rate tuned separately on validation with the same grid budget and selection rule.
+- Total gradient steps = mini-batch backward passes (equal across arms); actual optimizer updates per level are recorded and reported, since they differ under periodic stepping and nested objectives.
+- Wall-clock is reported, not matched (variant D's double backward costs more).
+- Gradient clipping is identical for all arms; how it interacts with gradient accumulation (A, D) must be decided.
+
+**Classifier head (§1.1/§1.2).** The plan does not say which level the head belongs to or how head bias is handled. Options: head in the fastest level (current default), head in the slowest level, or a head-bias fix applied equally to all arms (masked loss or nearest-class-mean head).
+
+**Level ratios.** (1, 4, 16) in Stage 1, and also (1, 16, 256), which the plan currently assigns to Stage 3. Both must be matched in the nested arms.
+
+**Variant D definition (§1.1).** The current implementation (teammate's `NestedObjectives`) trains every level on the data loss and adds a penalty on the faster level's squared gradient norm (λ = 0.1, via double backward). That is one reading; the plan's wording ("rather than over the data directly") is stronger. I could not find a "DMSM" block in MoNet's public repository (`nl_src/` contains a level scheduler, a chained residual-MLP memory system and a momentum module). The reference needs verifying before D is defended.
+
+**Baselines (§1.3).** EWC's λ and each baseline's key setting are tuned with the same validation protocol.
+
+### R5. New Stage 1 items (agreed to add; definitions PROPOSED)
+
+| Item | What it is | Decides | Status |
+| ----- | ----- | ----- | ----- |
+| Drift diagnostic | Stitch old/new checkpoints to split each level's probe drift into own, inherited and BatchNorm shares | Whether slowing a level can protect it; shapes the nesting design | Done on the first control runs; to be repeated for every new arm |
+| Flat learning-rate frontier | Flat at several learning rates with checkpoints; probe forgetting against just-learned accuracy | The bar a nested variant must sit below | Not run |
+| Epochs-per-task test | Flat at 2-3 epochs per task with checkpoints | Whether the number of steps, not the step size, limits drift | Not run |
+
+### R6. Status against §1.1-§1.3 (FACT)
+
+- **Done:** Flat and Flat + LLRD in both orientations (3 seeds), epoch sweep, learning-rate grid, probe and task-IL analysis, drift diagnostic.
+- **Code exists, never run:** the shared `NestedLearner` and the A-D update rules (from the team branch).
+- **In progress on branch `nested-b-d`:** variants B and D, `slow_side: input`, run through the existing runner (the team's `src/nested/` code is copied in; the build breakdown awaits go-ahead).
+- **Variants A and C:** being done by my teammate, outside this branch's scope.
+- **Not built or not run:** the depth ablation, CKA and gradient-cosine runs, and the baselines (LwF, ER, DER++, GDumb, byte-matched replay).
+
+### R7. Open questions for the supervisor
+
+1. Gate 1: can it be judged on per-level probe forgetting at matched new-task accuracy, and what margin?
+2. How should "matched effective learning rate" be defined?
+3. Where does the head sit, and should head bias be fixed for all arms?
+4. Level ratios: (1, 4, 16) only, or also (1, 16, 256) in Stage 1?
+5. How should D be defined, and where does the plan's "DMSM" reference come from?
+6. Is "slow-deep = input side slowest" the intended reading of the proposal?
+7. Is a Stage 1 conclusion still meaningful if learning-rate-based slowness (B, and A to first order) turns out not to help?
+
