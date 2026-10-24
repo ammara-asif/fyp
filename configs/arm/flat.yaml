@@ -1,0 +1,5 @@
+# flat.yaml  — standard ResNet-18, uniform LR (depth 1, period 1 == plain SGD)
+name: flat
+rule: periodic
+nesting: {depth: 1, periods: [1], ordering: slow_deep}
+rule_kwargs: {accumulate: mean}
