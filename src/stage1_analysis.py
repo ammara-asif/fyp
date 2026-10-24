@@ -34,7 +34,8 @@ def load_result_by_id(rid, paths):
 
 
 def list_runs(paths, stage):
-    """Finished training runs of `stage` that saved checkpoints."""
+    """Finished training runs of `stage` (a name or a list of names) that saved checkpoints."""
+    stages = {stage} if isinstance(stage, str) else set(stage)
     out = []
     for fn in sorted(os.listdir(paths["results"])):
         if not fn.endswith(".json"):
@@ -42,7 +43,7 @@ def list_runs(paths, stage):
         with open(os.path.join(paths["results"], fn)) as f:
             r = json.load(f)
         cfg = r.get("config", {})
-        if (r.get("status") == "finished" and cfg.get("stage") == stage
+        if (r.get("status") == "finished" and cfg.get("stage") in stages
                 and r.get("metrics", {}).get("checkpoint_dir")):
             out.append(r)
     return out

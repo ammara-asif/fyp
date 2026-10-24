@@ -11,7 +11,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 SETUP = r'''# ---- Setup: Drive + code + wandb (run this first, every session) ----
 REPO_URL = "https://github.com/YOUR_USERNAME/YOUR_REPO.git"   # <-- EDIT ONCE
-BRANCH = "main"
+BRANCH = "nested-b-d"   # the branch with the code this notebook needs (set back to "main" after merging)
 
 import os, subprocess, sys
 from google.colab import drive, userdata
@@ -28,11 +28,13 @@ try:
     url = REPO_URL.replace("https://", f"https://{tok}@")
 except Exception:
     pass
-if os.path.isdir(CODE):
-    subprocess.run(["git", "-C", CODE, "pull", "-q"], check=True)
-else:
-    subprocess.run(["git", "clone", "-q", "-b", BRANCH, url, CODE], check=True)
-print(subprocess.check_output(["git", "-C", CODE, "log", "-1", "--oneline"]).decode())
+if not os.path.isdir(CODE):
+    subprocess.run(["git", "clone", "-q", url, CODE], check=True)
+# fetch + checkout + pull, so a clone left on another branch earlier in the session switches over
+subprocess.run(["git", "-C", CODE, "fetch", "-q", "origin"], check=True)
+subprocess.run(["git", "-C", CODE, "checkout", "-q", BRANCH], check=True)
+subprocess.run(["git", "-C", CODE, "pull", "-q", "origin", BRANCH], check=True)
+print(BRANCH, subprocess.check_output(["git", "-C", CODE, "log", "-1", "--oneline"]).decode())
 
 # Dependencies (torch/torchvision come preinstalled with Colab's CUDA build; don't reinstall them).
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", f"{CODE}/requirements.txt"], check=True)
@@ -44,8 +46,11 @@ wandb.login(key=userdata.get("WANDB_API_KEY"))
 sys.path.insert(0, f"{CODE}/src")
 # Python caches imported modules for the whole kernel session, so after a git pull
 # a plain `import` would silently keep running the OLD code. Drop the cached copies.
-for _m in ["fyp_infra", "stage1_runner", "stage1_analysis", "stage1_drift_diagnostic"]:
-    sys.modules.pop(_m, None)
+_MINE = {"fyp_infra", "stage1_runner", "stage1_analysis", "stage1_drift_diagnostic",
+         "stage1_structural", "nested_builder"}
+for _m in list(sys.modules):
+    if _m in _MINE or _m == "src" or _m.startswith("src."):   # src.* = the team's nested code
+        sys.modules.pop(_m, None)
 import torch
 from fyp_infra import setup_paths, run_sweep, run_id, load_result
 import stage1_runner as sr
@@ -278,7 +283,8 @@ expect roughly 5-15 min per training run on CPU (estimate, not measured), a few 
 """),
     code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
-TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
+STAGES = ["stage1_control", "stage1_nested_control"]   # old control arms + Flat/B/D via the nested path
+TRAIN_RUNS = sa.list_runs(paths, stage=STAGES)
 for r in TRAIN_RUNS:
     c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
 ACFGS = sa.analysis_configs(TRAIN_RUNS)"""),
@@ -353,7 +359,8 @@ Result of the first run (Flat at lr 0.3, slow-deep LLRD at lr 0.5): 1 held (laye
     code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
 import stage1_drift_diagnostic as dd
-TRAIN_RUNS = sa.list_runs(paths, stage="stage1_control")
+STAGES = ["stage1_control", "stage1_nested_control"]   # old control arms + Flat/B/D via the nested path
+TRAIN_RUNS = sa.list_runs(paths, stage=STAGES)
 for r in TRAIN_RUNS:
     c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
 DCFGS = dd.diagnostic_configs(TRAIN_RUNS)"""),
@@ -414,5 +421,235 @@ plt.tight_layout(); plt.show()"""),
 - `bn_recovery` close to `total_drift` means BN statistics explain most of the drift. Close to 0 means BN is not the cause.
   Only trust it if `bn_procedure_effect` is near 0.
 - Differences smaller than the seed std (error bars) are not meaningful with 3 seeds.
+"""),
+])
+
+NESTED_TABLE = r'''import numpy as np, pandas as pd
+
+def table(configs):
+    """One row per config: accuracy metrics, cost, and per-level means over tasks (nested arms)."""
+    rows = []
+    for cfg in configs:
+        base = {"arm": sr.arm_label(cfg), "lr": cfg["lr"], "seed": cfg["seed"]}
+        r = load_result(cfg, paths)
+        if r is None:
+            rows.append({**base, "status": "not finished"}); continue
+        m = r["metrics"]
+        row = {**base, "run_id": r["run_id"], "avg_incremental_acc": m["avg_incremental_acc"],
+               "final_avg_acc": m["final_avg_acc"], "avg_forgetting": m["avg_forgetting"],
+               # mean of the diagonal: accuracy on each task right after learning it (plasticity check)
+               "acc_just_learned": float(np.mean(np.diag(m["acc_matrix"]))),
+               "steps": m["optimizer_steps"], "n_params": m["n_params"],
+               "minutes": r["wall_clock_s"] / 60, "peak_gpu_mb": m.get("peak_gpu_mem_mb")}
+        log = m.get("level_log_per_exp") or []
+        for k in (log[0] if log else {}):
+            if k.startswith(("updates/", "rel_displacement/", "penalty_ratio/")):
+                row[k] = float(np.mean([x[k] for x in log]))
+        rows.append(row)
+    return pd.DataFrame(rows)'''
+
+write("stage1_nested_bd.ipynb", [
+    md("""
+# Stage 1: nested variants B and D (through my runner)
+
+Same benchmark, model size, data order, batch size, epochs, clipping and metrics as the Flat / LLRD control.
+All three arms here use the team's ResNet class (`reduced_resnet18_blocks`, same architecture and, per the tests,
+the same initial weights as my ResNet) and the team's `NestedLearner`, split into three levels:
+`[stem, layer1] | [layer2, layer3] | [layer4, fc]`, `slow_side: input` (input-side level slowest).
+
+- **Flat (`flat_nl`)**: variant B with all three ratios at 1, i.e. plain SGD through the same code path.
+- **B (`nested_b`)**: per-level learning rates lr/16, lr/4, lr (input side first). With this split it is the same
+  thing as my Flat + LLRD with `slow_side: input` (old label `llrd_fast_deep`), so section 2 is a regression check.
+- **D (`nested_d_lam…`), one reading of the plan's "nested objectives"**: every level trains on the data loss;
+  levels step every 16 / 4 / 1 minibatches (input side first) on their averaged gradients, all at the base lr; and each
+  slower level also gets λ × the gradient of the faster neighbour's squared gradient norm (double backward).
+  λ = 0 is variant A (periodic stepping) at the same lr.
+
+Clipping: every arm clips each minibatch's new gradient to norm 1.0; D's accumulated gradients are not clipped again.
+Logged per task: optimizer updates per level, how far each level's weights moved, D's penalty-to-data gradient ratio,
+minutes, peak GPU memory.
+
+Order: 0 tests → 1 smoke → 2 regression + B lr grid → 3 D lr grid, then λ grid → 4 control (test set, 3 seeds).
+Every section is resumable: finished runs are skipped.
+"""),
+    code(SETUP),
+    code(NESTED_TABLE),
+    md("## 0. Tests (tiny CPU configs, a few minutes)\nRun after every `git pull`. Stop here if anything fails."),
+    code(r'''subprocess.run([sys.executable, "-m", "pip", "install", "-q", "pytest"], check=True)
+r = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q"], cwd=CODE, capture_output=True, text=True,
+                   env={**os.environ, "WANDB_MODE": "disabled", "CUDA_VISIBLE_DEVICES": ""})   # CPU: deterministic
+print(r.stdout[-6000:]); print(r.stderr[-3000:])
+assert r.returncode == 0, "tests failed: read the output above before running anything else"'''),
+    md("""
+## 1. Smoke test (2 experiences × 50 classes, 1 epoch, validation split)
+
+Checks that each arm runs on the GPU with Avalanche 0.6.0 (the team's code was written for 0.5.0), and measures cost.
+One epoch over 2 experiences sees the same training images as one epoch of the 20-task setup, so a full
+10-epoch run trains for about **10 × `train_min`** (evaluation time comes on top).
+`penalty_ratio/<level>` = D's penalty gradient size / data gradient size for that level (input for setting the λ grid).
+"""),
+    code(r'''SMOKE = [sr.arm_cfg(name, stage="smoke_nested", n_experiences=2, epochs=1, lr=0.1, eval_split="val")
+         for name in ["flat", "nested_b", "nested_d"]]
+out = run_sweep(SMOKE, sr.run_experiment, paths, force=True)   # force: always re-time after code changes
+smoke = table(SMOKE)
+smoke["train_min"] = [sum(out[run_id(c)]["metrics"]["train_minutes_per_exp"]) if out[run_id(c)] else None
+                      for c in SMOKE]
+smoke["est_full_run_train_min"] = 10 * smoke["train_min"]
+display(smoke.T)'''),
+    md("""
+## 2. Regression check, then B's learning-rate grid (validation, seed 0)
+
+**Regression check (criterion fixed before running):** B at lr 0.5 must match the old-path LLRD run with the same
+settings (`llrd_fast_deep`, lr 0.5, from `stage1_lr_grid`) to within **0.5 points** on average incremental accuracy and
+on accuracy on the just-learned task. If the init test passed, the only difference is GPU non-determinism.
+If it fails, stop: the nested path is not reproducing the control.
+
+**B's grid:** the old grid for this arm stopped at its best value, 0.5, and the control then used 0.6 without
+validating it. Here B gets 0.5 / 0.6 / 0.7 / 0.9. Selection rule as before: highest `avg_incremental_acc`;
+if the best is at the top of the grid, extend it. The old-path points below 0.5 (0.03-0.3) are shown for context
+(they are only comparable if the regression check passes).
+"""),
+    code(r'''EPOCHS = 10
+
+def val_cfg(name, lr, **kw):
+    return sr.arm_cfg(name, stage="stage1_nested_lr_grid", epochs=EPOCHS, seed=0, lr=lr, eval_split="val", **kw)
+
+OLD_B = {lr: sr.make_cfg(stage="stage1_lr_grid", strategy="naive", epochs=EPOCHS, seed=0, lr=lr, eval_split="val",
+                         lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="fast_deep")
+         for lr in [0.03, 0.1, 0.2, 0.3, 0.5]}
+B_GRID = [0.5, 0.6, 0.7, 0.9]     # 0.5 first: it is the regression run
+B_CONFIGS = [val_cfg("nested_b", lr) for lr in B_GRID]
+for c in B_CONFIGS: print(run_id(c), sr.arm_label(c), c["lr"])'''),
+    code("out = run_sweep(B_CONFIGS, sr.run_experiment, paths)"),
+    code(r'''old, new = load_result(OLD_B[0.5], paths), load_result(B_CONFIGS[0], paths)
+assert old is not None, "old llrd_fast_deep lr 0.5 val run not found on Drive"
+if new is not None:
+    reg = table([OLD_B[0.5], B_CONFIGS[0]])
+    display(reg[["arm", "lr", "run_id", "avg_incremental_acc", "acc_just_learned", "final_avg_acc", "avg_forgetting", "minutes"]])
+    d_inc = abs(reg["avg_incremental_acc"].iloc[0] - reg["avg_incremental_acc"].iloc[1])
+    d_jl = abs(reg["acc_just_learned"].iloc[0] - reg["acc_just_learned"].iloc[1])
+    A_old, A_new = np.array(old["metrics"]["acc_matrix"]), np.array(new["metrics"]["acc_matrix"])
+    print(f"|diff| avg incremental {d_inc:.2f}, just-learned {d_jl:.2f}; acc-matrix max |diff| {np.abs(A_old - A_new).max():.2f}")
+    print("REGRESSION CHECK", "PASSED" if max(d_inc, d_jl) < 0.5 else "FAILED: stop and investigate")'''),
+    code(r'''bdf = table(list(OLD_B.values()) + B_CONFIGS)
+display(bdf[["arm", "lr", "avg_incremental_acc", "acc_just_learned", "final_avg_acc", "minutes"]])
+done = bdf[bdf["arm"] == "nested_b"].dropna(subset=["avg_incremental_acc"])
+if len(done):
+    best = done.loc[done["avg_incremental_acc"].idxmax()]
+    print(f"best B lr on its grid: {best['lr']} (avg incremental {best['avg_incremental_acc']:.2f})")
+    if best["lr"] == max(B_GRID): print("WARNING: best is at the top of the grid; extend B_GRID before choosing.")'''),
+    md("""
+## 3. D: learning-rate grid (λ = 0.1), then λ grid at the chosen lr (validation, seed 0)
+
+Same selection rule. The λ grid is searched at D's best lr (one parameter at a time, not a full lr × λ grid,
+to fit the budget). λ = 0 equals variant A at that lr: it shows whether the penalty adds anything to periodic stepping.
+If the smoke test's `penalty_ratio` is far from 0.01-1 at λ = 0.1, re-centre `LAM_GRID` before running it (and note why).
+"""),
+    code(r'''D_LR_GRID = [0.03, 0.1, 0.2, 0.3, 0.5]
+D_LR_CONFIGS = [val_cfg("nested_d", lr) for lr in D_LR_GRID]   # surprise_weight 0.1 from nested_d.yaml
+for c in D_LR_CONFIGS: print(run_id(c), sr.arm_label(c), c["lr"])
+out = run_sweep(D_LR_CONFIGS, sr.run_experiment, paths)'''),
+    code(r'''ddf = table(D_LR_CONFIGS)
+display(ddf.drop(columns=["seed", "run_id"], errors="ignore"))
+done = ddf.dropna(subset=["avg_incremental_acc"]) if "avg_incremental_acc" in ddf else ddf.iloc[:0]
+if len(done):
+    best = done.loc[done["avg_incremental_acc"].idxmax()]
+    print(f"best D lr: {best['lr']} (avg incremental {best['avg_incremental_acc']:.2f})")
+    if best["lr"] in (min(D_LR_GRID), max(D_LR_GRID)): print("WARNING: best lr is at the edge of the grid; extend it first.")'''),
+    code(r'''D_LR = None                          # <- fill in from the table above
+LAM_GRID = [0.0, 0.01, 0.1, 1.0]     # 0.1 at D_LR is already in the lr grid (same config -> reused)
+if D_LR is None:
+    print("set D_LR first")
+else:
+    D_LAM_CONFIGS = [val_cfg("nested_d", D_LR, rule_kwargs=dict(surprise_weight=lam)) for lam in LAM_GRID]
+    for c in D_LAM_CONFIGS: print(run_id(c), sr.arm_label(c), c["lr"])
+    out = run_sweep(D_LAM_CONFIGS, sr.run_experiment, paths)
+    display(table(D_LAM_CONFIGS).drop(columns=["seed", "run_id"], errors="ignore"))'''),
+    md("""
+## 4. Control: Flat, B, D on the test set (3 seeds, checkpoints)
+
+Fill `LR` and `D_LAM` from sections 2-3 (Flat uses its tuned lr 0.1 from `stage1_lr_grid`). An arm still at `None` is
+skipped. Checkpoints go to `MyDrive/fyp_nested_cl/checkpoints/` for `stage1_analysis`, `stage1_drift_diagnostic` and
+`stage1_structural` (all CPU). The old-path control runs (Flat lr 0.1, `llrd_fast_deep` lr 0.6) are shown for comparison.
+The summary **asserts** equal optimizer-step counts (minibatch backward passes) and parameter counts across all rows.
+"""),
+    code(r'''SEEDS = [0, 1, 2]
+LR = {"flat": 0.1, "nested_b": None, "nested_d": None}
+D_LAM = None
+CONTROL = []
+for s in SEEDS:                       # seed outer: each seed completes every arm before the next starts
+    for name, lr in LR.items():
+        if lr is None or (name == "nested_d" and D_LAM is None):
+            continue
+        kw = dict(rule_kwargs=dict(surprise_weight=D_LAM)) if name == "nested_d" else {}
+        CONTROL.append(sr.arm_cfg(name, stage="stage1_nested_control", epochs=EPOCHS, seed=s, lr=lr,
+                                  eval_split="test", save_checkpoints=True, **kw))
+for name, lr in LR.items():
+    if lr is None or (name == "nested_d" and D_LAM is None): print(f"skipping {name}: set LR / D_LAM first")
+for c in CONTROL: print(run_id(c), sr.arm_label(c), c["lr"], c["seed"])'''),
+    code("out = run_sweep(CONTROL, sr.run_experiment, paths)"),
+    code(r'''OLD_CONTROL = [sr.make_cfg(stage="stage1_control", strategy="naive", epochs=EPOCHS, seed=s, lr=lr, eval_split="test",
+                           save_checkpoints=True, **arm)
+               for s in SEEDS for lr, arm in [(0.1, dict(lr_schedule="flat")),
+                                              (0.6, dict(lr_schedule="llrd", level_ratios=(1, 4, 16), level_order="fast_deep"))]]
+cdf = table(OLD_CONTROL + CONTROL)
+done = cdf[cdf["status"] != "not finished"] if "status" in cdf else cdf
+assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
+cols = ["avg_incremental_acc", "acc_just_learned", "final_avg_acc", "avg_forgetting", "minutes", "peak_gpu_mb"]
+display(done.groupby(["arm", "lr"])[cols].agg(["mean", "std", "count"]).round(2))
+lvl = [c for c in done.columns if c.startswith(("updates/", "rel_displacement/", "penalty_ratio/"))]
+if lvl: display(done.groupby(["arm", "lr"])[lvl].mean().T.round(4))'''),
+    md("""
+**Next:** run `stage1_analysis`, `stage1_drift_diagnostic` and `stage1_structural` (CPU runtimes). They pick up both
+`stage1_control` and `stage1_nested_control`, so old and new arms land in one table. Gate 1 (proposed) is judged on
+per-level probe forgetting at matched just-learned accuracy, against Flat at its tuned lr and LLRD.
+"""),
+])
+
+write("stage1_structural.ipynb", [
+    md("""
+# Stage 1: CKA drift and gradient cosine per level (from checkpoints)
+
+No training; CPU runtime is fine. Replaces the team's in-loop structural plugin with post-hoc measures on the saved
+per-task checkpoints, using fixed image sets (definitions in `src/stage1_structural.py`):
+
+- **`cka_to_final`** per level: how similar the final model's features of task *j*'s test images are to the features
+  right after learning *j* (1 = unchanged; lower = more drift). The representation-similarity partner of probe forgetting.
+- **`cka_consecutive`** per level: similarity between consecutive checkpoints on a fixed 1000-image test subset.
+- **`grad_cos`** per parameter group (3 depth groups + head): cosine between the gradients of the previous task and the
+  new task at the same checkpoint. Negative = the new task pulls the group against the old one.
+
+Levels are layer1 / layer3 / layer4 (pooled), as in the probe analysis. Cost per training run: not measured yet.
+"""),
+    code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
+    code(r"""import stage1_analysis as sa
+import stage1_structural as st
+STAGES = ["stage1_control", "stage1_nested_control"]
+TRAIN_RUNS = sa.list_runs(paths, stage=STAGES)
+for r in TRAIN_RUNS:
+    c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
+SCFGS = st.structural_configs(TRAIN_RUNS)"""),
+    code("out = run_sweep(SCFGS, st.structural_run, paths)"),
+    code(r"""import numpy as np, pandas as pd
+rows = []
+for a in SCFGS:
+    r = load_result(a, paths)
+    if r is None: continue
+    m = r["metrics"]; c = m["train_config"]
+    row = {"arm": sr.arm_label(c), "lr": c["lr"], "seed": c["seed"]}
+    for l, name in enumerate(m["level_modules"]):
+        row[f"cka_to_final/{name}"] = m["cka_to_final_avg"][l]
+        row[f"cka_consecutive/{name}"] = m["cka_consecutive_avg"][l]
+    # group names differ between the two model classes (conv1+bn1+layer1 vs stem+layer1), so label by position
+    n_g = len(m["grad_cos_avg"])
+    for g, v in enumerate(m["grad_cos_avg"]):
+        row["grad_cos/" + ("head" if g == n_g - 1 else f"group{g}")] = v
+    rows.append(row)
+sdf = pd.DataFrame(rows)
+display(sdf.drop(columns="seed").groupby(["arm", "lr"]).agg(["mean", "std"]).T.round(3))"""),
+    md("""
+**How to read it.** The thesis predicts that slow levels keep a higher `cka_to_final` than the same levels in Flat.
+Differences smaller than the seed std are not meaningful with 3 seeds. `grad_cos` near 0 or negative at a level means
+consecutive tasks pull that level in unrelated or opposing directions.
 """),
 ])

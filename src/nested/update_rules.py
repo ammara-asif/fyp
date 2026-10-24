@@ -57,6 +57,7 @@ class PeriodicStepping(UpdateRule):
         self.accumulate = accumulate
         self.optimizers = [self._sgd(l.parameters()) for l in learner.levels]
         self.t = 0
+        self.updates = [0] * len(learner.levels)  # optimizer steps taken per level (never reset; for logging)
 
     def reset(self):
         super().reset()
@@ -67,7 +68,7 @@ class PeriodicStepping(UpdateRule):
 
     def step(self):
         self.t += 1
-        for lvl, opt in zip(self.learner.levels, self.optimizers):
+        for i, (lvl, opt) in enumerate(zip(self.learner.levels, self.optimizers)):
             if self.t % lvl.period != 0:
                 continue
             if self.accumulate == "mean" and lvl.period > 1:
@@ -76,6 +77,7 @@ class PeriodicStepping(UpdateRule):
                         p.grad.div_(lvl.period)
             opt.step()
             opt.zero_grad(set_to_none=True)
+            self.updates[i] += 1
 
 
 # -------------------------------------------------------------------------- B
@@ -131,14 +133,26 @@ class EMACoupling(UpdateRule):
 # -------------------------------------------------------------------------- D
 class NestedObjectives(PeriodicStepping):
     """Level i+1 (slower) optimises over the gradient stream of level i (faster):
-        g_{i+1} = d/dθ_{i+1} [ L + λ ||∇_{θ_i} L||^1^ ]
+        g_{i+1} = d/dθ_{i+1} [ L + λ ||∇_{θ_i} L||^2 ]
     i.e. the slow level also minimises the *surprise* of the level below it (second-order,
     via double backward). The fastest level sees only ∇L. Stepping is periodic as in A.
-    This is one concrete reading of 'nested objectives'; MoNet's DMSM is the other."""
+    This is one concrete reading of 'nested objectives'; MoNet's DMSM is the other.
+
+    self.stats keeps running sums per level (keyed by level name) for logging; the caller
+    reads them and resets them (stats = {}, stats_n = 0):
+      data_grad_norm/<lvl>    ||∇_{θ_lvl} L||           (every level)
+      surprise/<lvl>          ||∇_{θ_faster} L||^2      (the quantity <lvl> is penalised on)
+      penalty_grad_norm/<lvl> λ ||∇_{θ_lvl} surprise||  (size of the extra gradient)"""
 
     def __init__(self, learner, lr, surprise_weight=0.1, accumulate="mean", **kw):
         super().__init__(learner, lr, accumulate=accumulate, **kw)
         self.lam = surprise_weight
+        self.stats, self.stats_n = {}, 0
+
+    def _add_stat(self, key, value):
+        # Kept as a GPU tensor (no .item() per step, which would force a sync).
+        value = value.detach()
+        self.stats[key] = value if key not in self.stats else self.stats[key] + value
 
     def backward(self, loss, strategy):
         levels = self.learner.levels_fast_to_slow()
@@ -153,10 +167,17 @@ class NestedObjectives(PeriodicStepping):
 
         for li, (lvl, ps) in enumerate(zip(levels, per_level)):
             extra = [None] * len(ps)
+            own_sq = [g.detach().pow(2).sum() for g in grads[li] if g is not None]
+            if own_sq:
+                self._add_stat(f"data_grad_norm/{lvl.name}", torch.stack(own_sq).sum().sqrt())
             if li > 0:
                 faster = [g for g in grads[li - 1] if g is not None]
                 surprise = sum(g.pow(2).sum() for g in faster)
                 extra = torch.autograd.grad(surprise, ps, retain_graph=True, allow_unused=True)
+                self._add_stat(f"surprise/{lvl.name}", surprise)
+                pen_sq = [g.pow(2).sum() for g in extra if g is not None]
+                if pen_sq:
+                    self._add_stat(f"penalty_grad_norm/{lvl.name}", self.lam * torch.stack(pen_sq).sum().sqrt())
             for p, g_own, g_ex in zip(ps, grads[li], extra):
                 tot = None if g_own is None else g_own.detach()
                 if g_ex is not None:
@@ -167,6 +188,7 @@ class NestedObjectives(PeriodicStepping):
                     p.grad = tot.clone()
                 else:
                     p.grad.add_(tot)
+        self.stats_n += 1
         del g_all, grads
 
 

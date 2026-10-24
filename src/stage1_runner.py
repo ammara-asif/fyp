@@ -16,11 +16,21 @@ Metric definitions (keep stable; changing them invalidates earlier runs):
 import os
 import random
 import subprocess
+import sys
+import time
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+# The team's code (src/nested, src/models, src/strategies) imports itself as `src.…`, so the repo
+# root must be importable too, not only src/ (which is how this file and fyp_infra are imported).
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
+from src.models.resnet import ReducedResNet18 as _BlockResNet18Base  # noqa: E402
 
 DEFAULTS = dict(
     stage="stage1",            # wandb group
@@ -54,7 +64,60 @@ DEFAULTS = dict(
     # Save model weights after every experience to checkpoints/{run_id}/ (for CKA drift,
     # linear probes, gradient cosine later). ~4.5 MB x 20 per run for the reduced ResNet-18.
     save_checkpoints=False,
+    # Nested arms only (strategy="nested"; see nested_builder.py). Load them with arm_cfg().
+    # rule: "per_level_lr" (B; Flat = B with lr_ratios all 1) or "nested_objectives" (D).
+    # nesting: {depth, slow_side: "input"|"output", lr_ratios (B) | periods (D)}, rates fastest first.
+    # rule_kwargs: D only, {surprise_weight, accumulate}.
+    rule=None,
+    nesting=None,
+    rule_kwargs=None,
 )
+
+NESTED_KEYS = ("rule", "nesting", "rule_kwargs")
+NESTED_RULES = ("per_level_lr", "nested_objectives")
+ARM_DIR = os.path.join(REPO_ROOT, "configs", "arm")
+
+
+def _normalise_nested(cfg):
+    """Canonical form of the nested fields, so equal behaviour always gives an equal run_id:
+    numbers cast (JSON hashes 1 and 1.0 differently), defaults written out, and a field the
+    rule would ignore is an error rather than silently hashed (a config can't claim a setting
+    that does nothing)."""
+    rule = cfg["rule"]
+    if rule not in NESTED_RULES:
+        raise ValueError(f"rule must be one of {NESTED_RULES} on this branch, got {rule!r}")
+    n = dict(cfg["nesting"] or {})
+    if "ordering" in n:
+        raise KeyError("nesting.ordering is ambiguous; use slow_side: input|output (plan R1)")
+    depth = int(n.pop("depth"))
+    slow_side = n.pop("slow_side")
+    if slow_side not in ("input", "output"):
+        raise ValueError(f"slow_side must be 'input' or 'output', got {slow_side!r}")
+    own = "lr_ratios" if rule == "per_level_lr" else "periods"
+    if set(n) != {own}:
+        raise KeyError(f"rule {rule} takes nesting keys depth, slow_side, {own}; got extra/missing {sorted(set(n) ^ {own})}")
+    vals = [float(v) for v in n[own]] if own == "lr_ratios" else [int(v) for v in n[own]]
+    if len(vals) != depth:
+        raise ValueError(f"{own} needs {depth} values, got {vals}")
+    if len(set(vals)) == 1:
+        slow_side = "input"  # all levels equal (e.g. Flat): orientation has no effect
+    cfg["nesting"] = {"depth": depth, "slow_side": slow_side, own: vals}
+
+    kw = dict(cfg["rule_kwargs"] or {})
+    if rule == "per_level_lr":
+        if kw:
+            raise KeyError(f"per_level_lr takes no rule_kwargs, got {kw}")
+        cfg["rule_kwargs"] = {}
+    else:
+        out = {"surprise_weight": float(kw.pop("surprise_weight", 0.1)),
+               "accumulate": kw.pop("accumulate", "mean")}
+        if kw:
+            raise KeyError(f"unknown rule_kwargs for {rule}: {sorted(kw)}")
+        cfg["rule_kwargs"] = out
+    if cfg["lr_schedule"] != "flat":
+        raise ValueError("nested arms set per-level lrs through the rule; leave lr_schedule='flat'")
+    if cfg["model"] != "reduced_resnet18_blocks":
+        raise ValueError("nested arms need model='reduced_resnet18_blocks' (it has blocks())")
 
 
 def make_cfg(**overrides):
@@ -62,6 +125,15 @@ def make_cfg(**overrides):
     if unknown:
         raise KeyError(f"Unknown config keys: {sorted(unknown)}")
     cfg = dict(DEFAULTS, **overrides)
+    if cfg["strategy"] == "nested":
+        _normalise_nested(cfg)
+    else:
+        # Deleted, not set to None: a key that is present changes the hash, so keeping it
+        # would change the run_id of every run made before these fields existed.
+        for k in NESTED_KEYS:
+            if cfg[k] is not None:
+                raise ValueError(f"{k} is only used with strategy='nested'")
+            del cfg[k]
     if isinstance(cfg["level_ratios"], list):
         cfg["level_ratios"] = tuple(cfg["level_ratios"])
     if cfg["lr_schedule"] == "flat":
@@ -84,9 +156,44 @@ def make_cfg(**overrides):
     return cfg
 
 
+def arm_cfg(name, **overrides):
+    """Config for a nested arm from configs/arm/{name}.yaml, plus overrides.
+
+    `nesting` and `rule_kwargs` overrides are merged into the YAML's values (e.g.
+    rule_kwargs=dict(surprise_weight=0.0)); everything else replaces. The YAML's `name` is for
+    reading only and is not part of the config, so it never changes a run_id.
+    """
+    import yaml
+
+    with open(os.path.join(ARM_DIR, f"{name}.yaml")) as f:
+        arm = yaml.safe_load(f)
+    cfg = dict(strategy="nested", model="reduced_resnet18_blocks", rule=arm["rule"],
+               nesting={**(arm.get("nesting") or {}), **overrides.pop("nesting", {})},
+               rule_kwargs={**(arm.get("rule_kwargs") or {}), **overrides.pop("rule_kwargs", {})})
+    cfg.update(overrides)
+    return make_cfg(**cfg)
+
+
 def arm_label(cfg):
-    """Short arm name for tables: 'flat', 'llrd_slow_deep', 'llrd_fast_deep' (+ ratios if not 1-4-16).
-    Display only; it does not change any config or run_id."""
+    """Short arm name for tables: 'flat', 'llrd_slow_deep', 'llrd_fast_deep' (+ ratios if not 1-4-16);
+    nested path: 'flat_nl', 'nested_b', 'nested_d_lam<λ>' (+ '_slow_output', + rates if not 1-4-16).
+    Display only; it does not change any config or run_id.
+    NB the llrd_* labels use the OLD orientation names: llrd_fast_deep = slow_side input (plan R1)."""
+    if cfg["strategy"] == "nested":
+        n = cfg["nesting"]
+        if cfg["rule"] == "per_level_lr":
+            rates = [round(1 / r, 6) for r in n["lr_ratios"]]
+            if len(set(rates)) == 1:
+                return "flat_nl"
+            lab = "nested_b"
+        else:
+            rates = n["periods"]
+            lab = f"nested_d_lam{cfg['rule_kwargs']['surprise_weight']:g}"
+        if n["slow_side"] != "input":
+            lab += "_slow_output"
+        if list(rates) != [1, 4, 16]:
+            lab += "_" + "-".join(f"{r:g}" for r in rates)
+        return lab
     if cfg["lr_schedule"] == "flat":
         return "flat"
     lab = f"llrd_{cfg['level_order']}"
@@ -170,8 +277,26 @@ class SimpleCNN(nn.Module):
         return [[self.c1], [self.c2], [self.c3]], self.linear
 
 
+class BlockResNet18(_BlockResNet18Base):
+    """The team's ReducedResNet18 (src/models/resnet.py; has blocks()/forward_blocks(), which
+    NestedLearner needs). Same architecture as ReducedResNet18 above; only module names differ
+    (stem = conv1+bn1+relu, fc = linear). It creates its layers in the same order, so with the
+    same seed the initial weights should be identical (tests/test_nested.py checks this).
+
+    depth_groups() is added so it is cut exactly like ReducedResNet18 by LLRD and the analysis
+    code: [stem, layer1] | [layer2, layer3] | [layer4], head separate. The team's file is unchanged."""
+
+    def depth_groups(self):
+        return [
+            [self.stem, self.layer1],
+            [self.layer2, self.layer3],
+            [self.layer4],
+        ], self.fc
+
+
 MODEL_BUILDERS = {
     "reduced_resnet18": lambda cfg, n_cls: ReducedResNet18(n_cls, cfg["nf"]),
+    "reduced_resnet18_blocks": lambda cfg, n_cls: BlockResNet18(n_cls, cfg["nf"]),
     "simple_cnn": lambda cfg, n_cls: SimpleCNN(n_cls, cfg["nf"]),
 }
 
@@ -365,13 +490,14 @@ def run_experiment(cfg, paths):
     from fyp_infra import run_id
 
     rid = run_id(cfg)
+    nested = cfg["strategy"] == "nested"
     set_seed(cfg["seed"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats()
     bench, n_cls = build_benchmark(cfg, paths)
+    # Built at the same point in the RNG stream on both paths, so the same seed gives the same init.
     model = MODEL_BUILDERS[cfg["model"]](cfg, n_cls)
-    pgs = build_param_groups(model, cfg)
-    optimizer = torch.optim.SGD(pgs, lr=cfg["lr"], momentum=cfg["momentum"],
-                                weight_decay=cfg["weight_decay"])
 
     class StepCounter(SupervisedPlugin):
         # Counts optimiser steps, so "matched total gradient steps" is checkable.
@@ -385,7 +511,9 @@ def run_experiment(cfg, paths):
     class TrainGuard(SupervisedPlugin):
         # 1) Stops the run the moment the loss is NaN/inf, so a diverged run
         #    crashes (no result file, retried later) instead of saving garbage.
-        # 2) Clips the global gradient norm (cfg grad_clip_norm).
+        # 2) Clips the global gradient norm (cfg grad_clip_norm). Nested arms clip inside the
+        #    update rule instead (nested_builder.install_fresh_grad_clip), because some rules
+        #    hold accumulated gradients in .grad that must not be clipped again.
         # 3) Accumulates the training loss so it can be logged per experience.
         def __init__(self):
             super().__init__()
@@ -396,15 +524,29 @@ def run_experiment(cfg, paths):
             if not torch.isfinite(loss):
                 raise FloatingPointError(f"non-finite training loss ({loss.item()}) "
                                          f"at experience {strategy.experience.current_experience}")
-            if cfg["grad_clip_norm"] is not None:
+            if cfg["grad_clip_norm"] is not None and not nested:
                 torch.nn.utils.clip_grad_norm_(strategy.model.parameters(), cfg["grad_clip_norm"])
             self.loss_sum += loss.item()
             self.n += 1
 
     counter, guard = StepCounter(), TrainGuard()
     evaluator = EvaluationPlugin(accuracy_metrics(experience=True, stream=True), loggers=[])
-    strategy = STRATEGY_BUILDERS[cfg["strategy"]](model, optimizer, cfg, device, evaluator,
-                                                  [counter, guard])
+    monitor = None
+    if nested:
+        import nested_builder as nb
+        common = _common(model, None, cfg, device, evaluator, [counter, guard])
+        model, rule, strategy, monitor, level_info = nb.build(cfg, model, device, common,
+                                                              [counter, guard])
+        ckpt_model = nb.checkpoint_module(rule)
+        lr_per_group = {li["blocks"]: li["lr"] for li in level_info}
+    else:
+        pgs = build_param_groups(model, cfg)
+        optimizer = torch.optim.SGD(pgs, lr=cfg["lr"], momentum=cfg["momentum"],
+                                    weight_decay=cfg["weight_decay"])
+        strategy = STRATEGY_BUILDERS[cfg["strategy"]](model, optimizer, cfg, device, evaluator,
+                                                      [counter, guard])
+        ckpt_model, level_info = model, None
+        lr_per_group = {str(pg["level"]): pg["lr"] for pg in pgs}
 
     n_params = sum(p.numel() for p in model.parameters())
     run = wandb.init(project="fyp-nested-cl", group=cfg["stage"], name=rid, config=cfg,
@@ -417,17 +559,19 @@ def run_experiment(cfg, paths):
         os.makedirs(ckpt_dir, exist_ok=True)
     classes_per_exp = [sorted(int(c) for c in e.classes_in_this_experience)
                        for e in bench.train_stream]
-    acc, train_losses = [], []
+    acc, train_losses, train_minutes = [], [], []
     try:
         for i, exp in enumerate(bench.train_stream):
             guard.loss_sum, guard.n = 0.0, 0
+            t0 = time.time()
             strategy.train(exp, num_workers=cfg["num_workers"])
+            train_minutes.append((time.time() - t0) / 60)
             train_losses.append(guard.loss_sum / max(guard.n, 1))
             if ckpt_dir is not None:
                 # Weights after training experience i (incl. BatchNorm stats), written
                 # atomically so a disconnect can't leave a truncated file.
                 p = os.path.join(ckpt_dir, f"after_exp{i:02d}.pt")
-                torch.save(model.state_dict(), p + ".tmp")
+                torch.save(ckpt_model.state_dict(), p + ".tmp")
                 os.replace(p + ".tmp", p)
             res = strategy.eval(bench.test_stream, num_workers=cfg["num_workers"])
             row = [100.0 * res[f"Top1_Acc_Exp/eval_phase/test_stream/Task000/Exp{j:03d}"]
@@ -435,8 +579,10 @@ def run_experiment(cfg, paths):
             acc.append(row)
             log = {"exp": i, "acc_seen_avg": float(np.mean(row[:i + 1])),
                    "acc_current_exp": row[i], "optimizer_steps": counter.steps,
-                   "train_loss": train_losses[-1]}
+                   "train_loss": train_losses[-1], "train_minutes": train_minutes[-1]}
             log.update({f"acc_exp/{j:02d}": row[j] for j in range(i + 1)})
+            if monitor is not None:
+                log.update({f"level/{k}": v for k, v in monitor.rows[-1].items()})
             wandb.log(log, step=i)
             print(f"  exp {i + 1}/{T}: seen-avg {log['acc_seen_avg']:.2f}%  current {row[i]:.2f}%"
                   f"  train-loss {train_losses[-1]:.3f}")
@@ -448,8 +594,11 @@ def run_experiment(cfg, paths):
     except BaseException:
         run.finish(exit_code=1)
         raise
+    peak_mb = torch.cuda.max_memory_allocated() / 2 ** 20 if device.type == "cuda" else None
     return dict(summary, eval_split=cfg["eval_split"], acc_matrix=acc,
                 train_loss_per_exp=train_losses, classes_per_exp=classes_per_exp,
                 checkpoint_dir=ckpt_dir, n_params=n_params, optimizer_steps=counter.steps,
-                lr_per_group={str(pg["level"]): pg["lr"] for pg in pgs},
+                lr_per_group=lr_per_group, level_info=level_info,
+                level_log_per_exp=monitor.rows if monitor is not None else None,
+                train_minutes_per_exp=train_minutes, peak_gpu_mem_mb=peak_mb,
                 device=str(device), git_commit=_git_commit(), wandb_url=run.url)

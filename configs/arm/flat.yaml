@@ -1,5 +1,6 @@
-# flat.yaml  — standard ResNet-18, uniform LR (depth 1, period 1 == plain SGD)
+# flat.yaml — Flat through the nested code path: variant B with every level at the full lr.
+# Same code path and param groups as nested_b; only the ratios differ. (Was: periodic, depth 1.)
 name: flat
-rule: periodic
-nesting: {depth: 1, periods: [1], ordering: slow_deep}
-rule_kwargs: {accumulate: mean}
+rule: per_level_lr
+nesting: {depth: 3, slow_side: input, lr_ratios: [1.0, 1.0, 1.0]}
+rule_kwargs: {}

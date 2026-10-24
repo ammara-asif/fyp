@@ -1,5 +1,7 @@
-# nested_b.yaml — per-level LR (3 slabs, ratio 1/k)
+# nested_b.yaml — variant B, per-level LR (3 levels, ratio 1/k). Rates are listed FASTEST FIRST.
+# slow_side: input -> stem+layer1 at lr/16, layer2+layer3 at lr/4, layer4+fc at lr
+# (= my Flat + LLRD with slow_side input, so this arm doubles as a regression check).
 name: nested_b
 rule: per_level_lr
-nesting: {depth: 3, periods: [1, 4, 16], lr_ratios: [1.0, 0.25, 0.0625], ordering: slow_deep}
+nesting: {depth: 3, slow_side: input, lr_ratios: [1.0, 0.25, 0.0625]}
 rule_kwargs: {}

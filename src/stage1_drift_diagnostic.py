@@ -48,9 +48,15 @@ CONDITIONS = ["OO", "ON", "NO", "NN", "BNj", "BNlast"]
 
 def resnet_stages(m):
     """The 3 depth groups of ReducedResNet18 as functions, matching depth_groups():
-    [stem + layer1] -> [layer2 + layer3] -> [layer4]. Outputs are unpooled feature maps."""
+    [stem + layer1] -> [layer2 + layer3] -> [layer4]. Outputs are unpooled feature maps.
+    Also handles BlockResNet18 (the team's class used by the nested arms), whose `stem`
+    is conv1 + bn1 + ReLU in one module: same computation, different module names."""
     if not hasattr(m, "layer4"):
         raise NotImplementedError("drift diagnostic is written for ReducedResNet18")
+    if hasattr(m, "stem"):
+        return [lambda x: m.layer1(m.stem(x)),
+                lambda h: m.layer3(m.layer2(h)),
+                lambda h: m.layer4(h)]
     return [lambda x: m.layer1(F.relu(m.bn1(m.conv1(x)))),
             lambda h: m.layer3(m.layer2(h)),
             lambda h: m.layer4(h)]

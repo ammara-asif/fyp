@@ -13,6 +13,11 @@ This project asks whether **nested learners** (networks whose levels update on d
 | `src/fyp_infra.py` | Paths, stable run IDs (a hash of the config), resumable `run_sweep` with atomic result files |
 | `src/stage1_runner.py` | Training runner: config defaults, models, strategies, LLRD learning-rate groups, train/val/test split, metrics, wandb logging, checkpoints |
 | `src/stage1_analysis.py` | Post-hoc analysis of saved checkpoints: task-IL accuracy and per-level linear probes |
+| `src/stage1_drift_diagnostic.py` | Post-hoc split of each level's probe drift into own / inherited / BatchNorm parts |
+| `src/stage1_structural.py` | Post-hoc CKA drift and gradient cosine per level, from checkpoints |
+| `src/nested_builder.py` | Glue that runs the team's nested code (variants B and D) through `stage1_runner` |
+| `src/nested/`, `src/models/`, `src/strategies/`, `src/metrics/` | Team code (copied from branch `Stage1`): `NestedLearner`, update rules A–D, block ResNet, `NestedStrategy` |
+| `configs/arm/*.yaml` | Nested arm definitions (`flat`, `nested_b`, `nested_d`), loaded with `stage1_runner.arm_cfg()` |
 | `notebooks/*.ipynb` | Colab notebooks. **Generated** by `notebooks/_build_notebooks.py`, so edit that file, not the notebooks |
 | `runs/` | Copies of executed notebooks, with their outputs |
 | `tests/test_smoke.py` | Tiny CPU tests (synthetic data, wandb disabled). Not yet run |
@@ -27,6 +32,9 @@ This project asks whether **nested learners** (networks whose levels update on d
 5. Run the stage notebooks in order:
 
    `stage0_ewc` → `stage1_epoch_sweep` → `stage1_lr_grid` → `stage1_control` → `stage1_analysis`
+
+   Nested variants B and D: `stage1_nested_bd` (tests → smoke → regression + grids → control), then
+   `stage1_analysis`, `stage1_drift_diagnostic`, `stage1_structural` (CPU).
 
 Everything that must survive a Colab reset lives on Drive under `MyDrive/fyp_nested_cl/`:
 - `data/`: CIFAR-100.

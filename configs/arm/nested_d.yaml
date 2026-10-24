@@ -1,5 +1,7 @@
-# nested_d.yaml — nested objectives (surprise minimisation, double backward)
+# nested_d.yaml — variant D, "one reading": periodic stepping every 1/4/16 minibatches (fastest first,
+# all levels at the base lr, mean-accumulated gradients) + lambda * ||grad of the faster level||^2
+# penalty on each slower level (double backward). slow_side: input -> stem+layer1 steps every 16.
 name: nested_d
 rule: nested_objectives
-nesting: {depth: 3, periods: [1, 4, 16], ordering: slow_deep}
+nesting: {depth: 3, slow_side: input, periods: [1, 4, 16]}
 rule_kwargs: {surprise_weight: 0.1, accumulate: mean}
