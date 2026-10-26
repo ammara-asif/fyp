@@ -215,7 +215,7 @@ SHOW = ["lr", "epochs", "eval_split"]
 for c in CONFIGS: print(run_id(c), sr.arm_label(c), {k: c[k] for k in SHOW})'''),
     code("out = run_sweep(CONFIGS, sr.run_experiment, paths)"),
     code(SUMMARY),
-    code(r'''LABEL = {sr.arm_label(sr.make_cfg(**a)): name for name, a in ARMS.items()}   # table label -> ARMS key
+    code(r'''LABEL = {sr.arm_label(sr.make_cfg(epochs=EPOCHS, **a)): name for name, a in ARMS.items()}   # table label -> ARMS key
 best = df.loc[df.groupby("arm")["avg_incremental_acc"].idxmax(), ["arm", "lr", "avg_incremental_acc", "acc_just_learned"]]
 print(best)
 for _, r in best.iterrows():
@@ -283,7 +283,7 @@ expect roughly 5-15 min per training run on CPU (estimate, not measured), a few 
 """),
     code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
-STAGES = ["stage1_control", "stage1_nested_control"]   # old control arms + Flat/B/D via the nested path
+STAGES = ["stage1_control", "stage1_nested_control", "stage1_epochs_per_task"]   # old control, Flat/B/D via the nested path, steps-per-task test
 TRAIN_RUNS = sa.list_runs(paths, stage=STAGES)
 for r in TRAIN_RUNS:
     c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
@@ -359,7 +359,7 @@ Result of the first run (Flat at lr 0.3, slow-deep LLRD at lr 0.5): 1 held (laye
     code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
 import stage1_drift_diagnostic as dd
-STAGES = ["stage1_control", "stage1_nested_control"]   # old control arms + Flat/B/D via the nested path
+STAGES = ["stage1_control", "stage1_nested_control", "stage1_epochs_per_task"]   # old control, Flat/B/D via the nested path, steps-per-task test
 TRAIN_RUNS = sa.list_runs(paths, stage=STAGES)
 for r in TRAIN_RUNS:
     c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])
@@ -557,7 +557,10 @@ if len(done):
     print(f"best D lr: {best['lr']} (avg incremental {best['avg_incremental_acc']:.2f})")
     if best["lr"] in (min(D_LR_GRID), max(D_LR_GRID)): print("WARNING: best lr is at the edge of the grid; extend it first.")'''),
     code(r'''D_LR = None                          # <- fill in from the table above
-LAM_GRID = [0.0, 0.01, 0.1, 1.0]     # 0.1 at D_LR is already in the lr grid (same config -> reused)
+# Re-centred after the smoke test (lr 0.1, lambda 0.1): penalty/data gradient ratio was 3.9 (stem+layer1) and
+# 1.2 (layer2+layer3), i.e. the penalty dominated. This grid spans ratio ~0.1 to ~4 on the slow level.
+# 0.1 at D_LR is already in the lr grid (same config -> reused). 0 = variant A at the same lr.
+LAM_GRID = [0.0, 0.003, 0.01, 0.03, 0.1]
 if D_LR is None:
     print("set D_LR first")
 else:
@@ -604,6 +607,63 @@ if lvl: display(done.groupby(["arm", "lr"])[lvl].mean().T.round(4))'''),
 `stage1_control` and `stage1_nested_control`, so old and new arms land in one table. Gate 1 (proposed) is judged on
 per-level probe forgetting at matched just-learned accuracy, against Flat at its tuned lr and LLRD.
 """),
+    md("""
+## 5. D: learning-rate re-check at the chosen λ (validation, seed 0)
+
+D's lr (0.7) was picked at λ = 0.1, where the penalty was 5-10× the data gradient and the clip shrank the data part of
+each step, so the best lr may have moved at λ = 0.01. Same selection rule (highest `avg_incremental_acc`).
+The lr 0.7 point already exists from the λ grid (same config, reused). If the best lr here differs clearly
+(beyond ~0.5 points of noise), re-run D's control at that lr and report both; otherwise keep 0.7.
+"""),
+    code(r'''D_LAM_CHOSEN = 0.01
+D_LR_RECHECK = [0.2, 0.4, 0.7]
+D_RECHECK = [val_cfg("nested_d", lr, rule_kwargs=dict(surprise_weight=D_LAM_CHOSEN)) for lr in D_LR_RECHECK]
+for c in D_RECHECK: print(run_id(c), sr.arm_label(c), c["lr"])
+out = run_sweep(D_RECHECK, sr.run_experiment, paths)
+rdf = table(D_RECHECK)
+display(rdf.drop(columns=["seed", "run_id"], errors="ignore"))
+done = rdf.dropna(subset=["avg_incremental_acc"]) if "avg_incremental_acc" in rdf else rdf.iloc[:0]
+if len(done):
+    best = done.loc[done["avg_incremental_acc"].idxmax()]
+    print(f"best D lr at lambda {D_LAM_CHOSEN}: {best['lr']} (avg incremental {best['avg_incremental_acc']:.2f})")
+    if best["lr"] in (min(D_LR_RECHECK), max(D_LR_RECHECK)): print("WARNING: best lr is at the edge of the re-check grid.")'''),
+    md("""
+## 6. Steps per task: Flat at 2 and 3 epochs per task (test set, 3 seeds, checkpoints) — plan R5
+
+**Question:** is deep-layer drift set by the *number* of steps per task rather than the step size? So far a level's own
+drift was the same (layer3 ≈ 4.7-4.9 points) whatever its lr, schedule or stepping period, which fits the hypothesis
+that ~790 steps per task let every level converge regardless. With 2-3 epochs there are ~160-240 steps per task.
+
+**Predictions, written before running:** if the hypothesis holds, own drift (drift diagnostic) and probe forgetting at
+layer3/layer4 drop clearly at 2-3 epochs compared with 10. If they stay about the same, the number of steps is not the
+limit and the hypothesis is wrong.
+
+**Confound to keep in mind:** fewer epochs also means each task is learned less well (lower `acc_just_learned`), and
+probe forgetting is measured from that lower starting point. Always read it next to `acc_just_learned` and
+`probe_at_learn`; a drop in forgetting that only mirrors a lower peak is not protection.
+
+lr stays at Flat's tuned 0.1 (tuned at 10 epochs; it is not re-tuned here, since this is a diagnostic, not an arm).
+Flat runs through the same path as B and D. Optional: add `"nested_b"` to `EPT_ARMS` (at its lr) to test whether slowing
+levels starts to help once there are fewer steps per task — that is the comparison that would matter for nesting.
+"""),
+    code(r'''EPT_EPOCHS = [2, 3]
+EPT_ARMS = {"flat": 0.1}          # optional: "nested_b": 0.6
+EPT = [sr.arm_cfg(name, stage="stage1_epochs_per_task", epochs=ep, seed=s, lr=lr,
+                  eval_split="test", save_checkpoints=True)
+       for s in SEEDS for ep in EPT_EPOCHS for name, lr in EPT_ARMS.items()]
+for c in EPT: print(run_id(c), sr.arm_label(c), "epochs", c["epochs"], "seed", c["seed"])
+out = run_sweep(EPT, sr.run_experiment, paths)'''),
+    code(r'''REF = [c for c in CONTROL if sr.arm_label(c) in {sr.arm_label(sr.arm_cfg(n, epochs=EPOCHS)) for n in EPT_ARMS}]   # same arms at 10 epochs
+edf = table(REF + EPT)
+edf["epochs"] = [c["epochs"] for c in REF + EPT]
+cols = ["avg_incremental_acc", "acc_just_learned", "final_avg_acc", "minutes"]
+display(edf.groupby(["arm", "epochs"])[cols].agg(["mean", "std", "count"]).round(2))
+lvl = [c for c in edf.columns if c.startswith("rel_displacement/")]
+display(edf.groupby(["arm", "epochs"])[lvl].mean().T.round(4))'''),
+    md("""
+Then run `stage1_analysis` and `stage1_drift_diagnostic` (they include `stage1_epochs_per_task`): compare probe forgetting
+and **own** drift per level at 2 / 3 / 10 epochs, next to `probe_at_learn` / `acc_just_learned`.
+"""),
 ])
 
 write("stage1_structural.ipynb", [
@@ -624,7 +684,7 @@ Levels are layer1 / layer3 / layer4 (pooled), as in the probe analysis. Cost per
     code(SETUP.replace("REQUIRE_GPU = True", "REQUIRE_GPU = False   # analysis only: CPU runtime is fine")),
     code(r"""import stage1_analysis as sa
 import stage1_structural as st
-STAGES = ["stage1_control", "stage1_nested_control"]
+STAGES = ["stage1_control", "stage1_nested_control", "stage1_epochs_per_task"]   # old control, Flat/B/D via the nested path, steps-per-task test
 TRAIN_RUNS = sa.list_runs(paths, stage=STAGES)
 for r in TRAIN_RUNS:
     c = r["config"]; print(r["run_id"], sr.arm_label(c), "lr", c["lr"], "seed", c["seed"])

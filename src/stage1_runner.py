@@ -178,7 +178,15 @@ def arm_label(cfg):
     """Short arm name for tables: 'flat', 'llrd_slow_deep', 'llrd_fast_deep' (+ ratios if not 1-4-16);
     nested path: 'flat_nl', 'nested_b', 'nested_d_lam<λ>' (+ '_slow_output', + rates if not 1-4-16).
     Display only; it does not change any config or run_id.
-    NB the llrd_* labels use the OLD orientation names: llrd_fast_deep = slow_side input (plan R1)."""
+    NB the llrd_* labels use the OLD orientation names: llrd_fast_deep = slow_side input (plan R1).
+    Runs with an epoch count other than the standard 10 get '_ep<N>', so tables never mix them."""
+    lab = _arm_label(cfg)
+    if cfg.get("epochs") not in (None, 10):
+        lab += f"_ep{cfg['epochs']}"
+    return lab
+
+
+def _arm_label(cfg):
     if cfg["strategy"] == "nested":
         n = cfg["nesting"]
         if cfg["rule"] == "per_level_lr":
