@@ -1,15 +1,18 @@
 """Builds the nested arms for stage1_runner: model + update rule + strategy.
 
-Glue between my runner and the team's code in src/nested/ and src/strategies/. Only
-two rules are wired here (A and C are my teammate's):
+Glue between my runner and the team's code in src/nested/ and src/strategies/:
+  periodic           variant A: level i accumulates gradients and steps every k_i minibatches
   per_level_lr       variant B (and Flat = B with lr_ratios all 1)
+  ema                variant C: live weights train like Flat; a shadow copy keeps, per level, an
+                     EMA of the live weights at rate tau_i, and the shadow is the deployed model
   nested_objectives  variant D, "one reading": periodic stepping (as A) + a penalty on the
                      faster level's squared gradient norm, via double backward
 
 Config (see make_cfg in stage1_runner):
-  rule        one of the two names above
-  nesting     {depth, slow_side, lr_ratios (B) | periods (D)}; rate vectors listed FASTEST FIRST
-  rule_kwargs D only: {surprise_weight, accumulate}
+  rule        one of the names above
+  nesting     {depth, slow_side, periods (A, D) | lr_ratios (B) | ema_taus (C)}; rate vectors
+              listed FASTEST FIRST
+  rule_kwargs A {accumulate}, C {consistency_weight}, D {surprise_weight, accumulate}
 slow_side "input" = levels nearest the input are slowest (the main arm, plan R1). The team's
 NestedLearner calls this ordering="slow_deep"; the mapping below is the only place it appears.
 """
@@ -60,6 +63,22 @@ def install_fresh_grad_clip(rule, max_norm):
     rule.backward = backward  # instance attribute: wraps this rule only, no change to the class
 
 
+def keep_shadow_in_eval_mode(rule):
+    """C only: the shadow (deployed) network is never trained by backprop, so keep it in eval
+    mode for good. Why: it is deep-copied while the live network is in train mode, and Avalanche
+    switches modes on whatever `strategy.model` is at the time. A shadow in train mode would use
+    batch statistics at evaluation and overwrite its BatchNorm running stats, which are meant to
+    be copied from the live network after every step."""
+    shadow = getattr(rule, "shadow", None)
+    if shadow is None:
+        return
+    shadow.eval()
+    # Pin every submodule, not only the top: Avalanche saves and restores the train flag of each
+    # submodule around evaluation. Instance overrides make .train()/.eval() no-ops on the shadow.
+    for m in shadow.modules():
+        m.train = (lambda mod: (lambda mode=True: mod))(m)
+
+
 class LevelMonitor(SupervisedPlugin):
     """Per-task, per-level record of what the update rule actually did.
 
@@ -70,12 +89,16 @@ class LevelMonitor(SupervisedPlugin):
     rel_displacement/<lvl>  the same divided by ||θ_start||
     D only (means over the task's minibatches): data_grad_norm, surprise, penalty_grad_norm,
     and penalty_ratio = mean penalty_grad_norm / mean data_grad_norm of the same level.
+    C only: deployed_displacement/<lvl> and deployed_rel_displacement/<lvl>, the same measures
+    on the shadow (the network that is evaluated and checkpointed); the plain keys are the live one.
     BatchNorm running statistics are buffers, not parameters, so they are not in the displacement.
     """
 
     def __init__(self, learner, rule):
         super().__init__()
         self.levels, self.rule = learner.levels, rule
+        deployed = rule.eval_model()
+        self.deployed_levels = deployed.levels if deployed is not learner else None
         self.steps = 0
         self.rows = []
 
@@ -90,6 +113,8 @@ class LevelMonitor(SupervisedPlugin):
 
     def before_training_exp(self, strategy, **kw):
         self._start = [self._flat(l) for l in self.levels]
+        if self.deployed_levels is not None:
+            self._start_dep = [self._flat(l) for l in self.deployed_levels]
         self._upd0 = self._updates()
         if hasattr(self.rule, "stats"):
             self.rule.stats, self.rule.stats_n = {}, 0
@@ -104,6 +129,11 @@ class LevelMonitor(SupervisedPlugin):
             row[f"updates/{lvl.name}"] = u1 - u0
             row[f"displacement/{lvl.name}"] = d
             row[f"rel_displacement/{lvl.name}"] = d / (s.norm().item() + 1e-12)
+        if self.deployed_levels is not None:
+            for lvl, s in zip(self.deployed_levels, self._start_dep):
+                d = (self._flat(lvl) - s).norm().item()
+                row[f"deployed_displacement/{lvl.name}"] = d
+                row[f"deployed_rel_displacement/{lvl.name}"] = d / (s.norm().item() + 1e-12)
         n = getattr(self.rule, "stats_n", 0)
         if n:
             means = {k: v.item() / n for k, v in self.rule.stats.items()}
@@ -123,21 +153,26 @@ def build(cfg, backbone, device, strategy_kwargs, plugins):
     """
     n = cfg["nesting"]
     learner = NestedLearner(backbone, depth=n["depth"], periods=n.get("periods"),
-                            lr_ratios=n.get("lr_ratios"),
+                            lr_ratios=n.get("lr_ratios"), ema_taus=n.get("ema_taus"),
                             ordering=SLOW_SIDE_TO_ORDERING[n["slow_side"]]).to(device)
+    # Built after .to(device), so C's shadow (a deep copy of the learner) is on the device too.
     rule = build_rule(cfg["rule"], learner, lr=cfg["lr"], momentum=cfg["momentum"],
                       weight_decay=cfg["weight_decay"], **cfg["rule_kwargs"])
     install_fresh_grad_clip(rule, cfg["grad_clip_norm"])
+    keep_shadow_in_eval_mode(rule)
     monitor = LevelMonitor(learner, rule)
     kw = {k: v for k, v in strategy_kwargs.items() if k not in ("model", "optimizer", "criterion")}
     strategy = NestedStrategy(learner, rule, plugins=list(plugins) + [monitor],
                               **{k: v for k, v in kw.items() if k != "plugins"})
-    # Effective lr and stepping period of each level, input side first (for the result file).
+    # Effective lr, stepping period and EMA rate of each level, input side first (result file).
     level_info = []
     for lvl in learner.levels:
         lr = cfg["lr"] * lvl.lr_ratio if cfg["rule"] == "per_level_lr" else cfg["lr"]
-        period = lvl.period if cfg["rule"] != "per_level_lr" else 1
-        level_info.append({"level": lvl.idx, "blocks": lvl.name, "lr": lr, "period": period})
+        period = lvl.period if cfg["rule"] in ("periodic", "nested_objectives") else 1
+        info = {"level": lvl.idx, "blocks": lvl.name, "lr": lr, "period": period}
+        if cfg["rule"] == "ema":
+            info["ema_tau"] = lvl.ema_tau
+        level_info.append(info)
     return learner, rule, strategy, monitor, level_info
 
 

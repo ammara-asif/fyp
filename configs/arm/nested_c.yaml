@@ -1,0 +1,9 @@
+# nested_c.yaml — variant C, EMA coupling. EMA rates are listed FASTEST FIRST.
+# The live network trains like Flat; after every step a shadow copy updates each level as an EMA of the live
+# level (shadow = tau * shadow + (1 - tau) * live). slow_side: input -> stem+layer1 tau 0.9375 (~16 steps),
+# layer2+layer3 tau 0.75 (~4 steps), layer4+fc tau 0 (= live). The shadow is the deployed (evaluated) model.
+# consistency_weight: MSE pulling the live logits toward the shadow's logits on the current batch.
+name: nested_c
+rule: ema
+nesting: {depth: 3, slow_side: input, ema_taus: [0.0, 0.75, 0.9375]}
+rule_kwargs: {consistency_weight: 0.1}

@@ -443,7 +443,7 @@ def table(configs):
                "minutes": r["wall_clock_s"] / 60, "peak_gpu_mb": m.get("peak_gpu_mem_mb")}
         log = m.get("level_log_per_exp") or []
         for k in (log[0] if log else {}):
-            if k.startswith(("updates/", "rel_displacement/", "penalty_ratio/")):
+            if k.startswith(("updates/", "rel_displacement/", "deployed_rel_displacement/", "penalty_ratio/")):
                 row[k] = float(np.mean([x[k] for x in log]))
         rows.append(row)
     return pd.DataFrame(rows)'''
@@ -600,7 +600,7 @@ done = cdf[cdf["status"] != "not finished"] if "status" in cdf else cdf
 assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
 cols = ["avg_incremental_acc", "acc_just_learned", "final_avg_acc", "avg_forgetting", "minutes", "peak_gpu_mb"]
 display(done.groupby(["arm", "lr"])[cols].agg(["mean", "std", "count"]).round(2))
-lvl = [c for c in done.columns if c.startswith(("updates/", "rel_displacement/", "penalty_ratio/"))]
+lvl = [c for c in done.columns if c.startswith(("updates/", "rel_displacement/", "deployed_rel_displacement/", "penalty_ratio/"))]
 if lvl: display(done.groupby(["arm", "lr"])[lvl].mean().T.round(4))'''),
     md("""
 **Next:** run `stage1_analysis`, `stage1_drift_diagnostic` and `stage1_structural` (CPU runtimes). They pick up both
@@ -663,6 +663,178 @@ display(edf.groupby(["arm", "epochs"])[lvl].mean().T.round(4))'''),
     md("""
 Then run `stage1_analysis` and `stage1_drift_diagnostic` (they include `stage1_epochs_per_task`): compare probe forgetting
 and **own** drift per level at 2 / 3 / 10 epochs, next to `probe_at_learn` / `acc_just_learned`.
+"""),
+])
+
+write("stage1_nested_ac.ipynb", [
+    md("""
+# Stage 1: nested variants A and C (through my runner)
+
+Same protocol as `stage1_nested_bd` (same benchmark, model, data order, batch size, epochs, clipping, metrics, and the
+same three levels `[stem, layer1] | [layer2, layer3] | [layer4, fc]`, `slow_side: input`).
+
+- **A (`nested_a`), periodic stepping**: levels step every 16 / 4 / 1 minibatches (input side first) on the mean of their
+  accumulated gradients, all at the base lr. Same stepping as D with λ = 0, without the double backward.
+  The wide version (`nested_a_1-16-256`) steps the input-side level only about 3 times per task; it is run on validation
+  only, and enters the control only after the supervisor answers the ratio question (R7.4).
+- **C (`nested_c_cw…`), EMA coupling**: the live network trains like Flat. After every step a shadow copy updates each
+  level as an EMA of the live level, τ = 0.9375 / 0.75 / 0 (input side first, i.e. 1 − 1/k for k = 16, 4, 1). The
+  **shadow is the deployed model**: it is what is evaluated, checkpointed and probed. An optional consistency term pulls
+  the live logits toward the shadow's. Expect C ≈ Flat with these τ: they average over only ~16 / 4 steps out of ~790
+  per task, so one longer setting (τ = 0.999 / 0.99 / 0) is also tried on validation.
+
+Order: 0 tests → 1 smoke → 2 A regression check (vs D with λ = 0) → 3 A lr grids → 4 C lr grid, consistency grid,
+long τ → 5 control (test set, 3 seeds). Every section is resumable.
+"""),
+    code(SETUP),
+    code(NESTED_TABLE),
+    md("## 0. Tests (tiny CPU configs, a few minutes)\nRun after every `git pull`. Stop here if anything fails."),
+    code(r'''subprocess.run([sys.executable, "-m", "pip", "install", "-q", "pytest"], check=True)
+r = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q"], cwd=CODE, capture_output=True, text=True,
+                   env={**os.environ, "WANDB_MODE": "disabled", "CUDA_VISIBLE_DEVICES": ""})   # CPU: deterministic
+print(r.stdout[-6000:]); print(r.stderr[-3000:])
+assert r.returncode == 0, "tests failed: read the output above before running anything else"'''),
+    md("""
+## 1. Smoke test (2 experiences × 50 classes, 1 epoch, validation split)
+
+Checks that A and C run on the GPU and measures cost: a full 10-epoch run trains for about **10 × `train_min`**.
+For C, compare `rel_displacement` (live) with `deployed_rel_displacement` (shadow) on the slow levels: with the
+teammate's τ they should be almost equal (the shadow follows the live weights closely), with the long τ the shadow
+should move less.
+"""),
+    code(r'''LONG_TAUS = [0.0, 0.99, 0.999]   # fastest first: stem+layer1 averages over ~1000 steps, layer2+layer3 over ~100
+SMOKE = [sr.arm_cfg("nested_a", stage="smoke_nested", n_experiences=2, epochs=1, lr=0.1, eval_split="val"),
+         sr.arm_cfg("nested_c", stage="smoke_nested", n_experiences=2, epochs=1, lr=0.1, eval_split="val"),
+         sr.arm_cfg("nested_c", stage="smoke_nested", n_experiences=2, epochs=1, lr=0.1, eval_split="val",
+                    nesting=dict(ema_taus=LONG_TAUS))]
+out = run_sweep(SMOKE, sr.run_experiment, paths, force=True)   # force: always re-time after code changes
+smoke = table(SMOKE)
+smoke["train_min"] = [sum(out[run_id(c)]["metrics"]["train_minutes_per_exp"]) if out[run_id(c)] else None
+                      for c in SMOKE]
+smoke["est_full_run_train_min"] = 10 * smoke["train_min"]
+display(smoke.T)'''),
+    md("""
+## 2. Regression check: A vs D with λ = 0 (validation, seed 0, lr 0.7)
+
+A and D with λ = 0 apply the same update (D only adds a zero penalty), so they must agree up to run-to-run GPU noise.
+The D run already exists from `stage1_nested_bd`'s λ grid (avg incremental 14.18), so this costs one A run.
+
+**Criterion (fixed before running):** average incremental accuracy within **0.5 points**. That metric averages all
+210 cells of the accuracy matrix; just-learned accuracy is shown but not used as a criterion, because on a single seed it
+moved by ~1 point between two runs of identical updates in B's regression check.
+"""),
+    code(r'''EPOCHS = 10
+
+def val_cfg(name, lr, **kw):
+    return sr.arm_cfg(name, stage="stage1_nested_lr_grid", epochs=EPOCHS, seed=0, lr=lr, eval_split="val", **kw)
+
+D_ZERO = val_cfg("nested_d", 0.7, rule_kwargs=dict(surprise_weight=0.0))   # from stage1_nested_bd, reused
+A_REG = val_cfg("nested_a", 0.7)
+print(run_id(D_ZERO), sr.arm_label(D_ZERO), "| exists:", load_result(D_ZERO, paths) is not None)
+out = run_sweep([A_REG], sr.run_experiment, paths)
+reg = table([D_ZERO, A_REG])
+display(reg[["arm", "lr", "run_id", "avg_incremental_acc", "acc_just_learned", "final_avg_acc", "minutes"]])
+if reg["avg_incremental_acc"].notna().all():
+    d = abs(reg["avg_incremental_acc"].iloc[0] - reg["avg_incremental_acc"].iloc[1])
+    print(f"|diff| avg incremental {d:.2f}")
+    print("REGRESSION CHECK", "PASSED" if d < 0.5 else "FAILED: stop and investigate")'''),
+    md("""
+## 3. A: learning-rate grids (validation, seed 0)
+
+Same selection rule as every other arm: highest `avg_incremental_acc`; extend a grid whose best value is at its edge.
+lr 0.7 is the regression run above (same config, reused). The wide-ratio grid is for information until the supervisor
+decides on (1, 16, 256).
+"""),
+    code(r'''A_GRID = [0.1, 0.3, 0.5, 0.7, 0.9]
+A_CONFIGS = [val_cfg("nested_a", lr) for lr in A_GRID]
+A_WIDE_CONFIGS = [val_cfg("nested_a", lr, nesting=dict(periods=[1, 16, 256])) for lr in A_GRID]
+for c in A_CONFIGS + A_WIDE_CONFIGS: print(run_id(c), sr.arm_label(c), c["lr"])
+out = run_sweep(A_CONFIGS + A_WIDE_CONFIGS, sr.run_experiment, paths)'''),
+    code(r'''def pick(configs, grid, name):
+    t = table(configs)
+    display(t.drop(columns=["seed", "run_id"], errors="ignore"))
+    done = t.dropna(subset=["avg_incremental_acc"]) if "avg_incremental_acc" in t else t.iloc[:0]
+    if len(done):
+        best = done.loc[done["avg_incremental_acc"].idxmax()]
+        print(f"best {name} lr: {best['lr']} (avg incremental {best['avg_incremental_acc']:.2f})")
+        if best["lr"] in (min(grid), max(grid)): print(f"WARNING: best {name} lr is at the edge of its grid; extend it first.")
+
+pick(A_CONFIGS, A_GRID, "A (1,4,16)")
+pick(A_WIDE_CONFIGS, A_GRID, "A (1,16,256)")'''),
+    md("""
+## 4. C: lr grid (teammate's τ, consistency 0.1), then consistency grid, then one long-τ run (validation, seed 0)
+
+C's live network trains like Flat, so its grid sits around Flat's (Flat's best was 0.1). After choosing the lr, the
+consistency weight is searched over {0, 0.1, 1} at that lr (0 = pure EMA coupling as the plan describes it).
+Then one run with the long τ at the chosen lr and weight. **Rule, fixed before running:** the main arm keeps the
+teammate's τ unless the long τ is better by more than 0.5 points of avg incremental accuracy; if it is, take it to the
+supervisor before it goes into the control (it is no longer matched to the 1/4/16 periods of A, B and D).
+"""),
+    code(r'''C_GRID = [0.03, 0.1, 0.2, 0.3]
+C_CONFIGS = [val_cfg("nested_c", lr) for lr in C_GRID]
+for c in C_CONFIGS: print(run_id(c), sr.arm_label(c), c["lr"])
+out = run_sweep(C_CONFIGS, sr.run_experiment, paths)
+pick(C_CONFIGS, C_GRID, "C")'''),
+    code(r'''C_LR = None                       # <- fill in from the table above
+CW_GRID = [0.0, 0.1, 1.0]         # 0.1 at C_LR is already in the lr grid (same config -> reused)
+if C_LR is None:
+    print("set C_LR first")
+else:
+    CW_CONFIGS = [val_cfg("nested_c", C_LR, rule_kwargs=dict(consistency_weight=w)) for w in CW_GRID]
+    for c in CW_CONFIGS: print(run_id(c), sr.arm_label(c), c["lr"])
+    out = run_sweep(CW_CONFIGS, sr.run_experiment, paths)
+    display(table(CW_CONFIGS).drop(columns=["seed", "run_id"], errors="ignore"))'''),
+    code(r'''C_CW = None                       # <- fill in from the table above (highest avg_incremental_acc)
+if C_LR is None or C_CW is None:
+    print("set C_LR and C_CW first")
+else:
+    pair = [val_cfg("nested_c", C_LR, rule_kwargs=dict(consistency_weight=C_CW)),
+            val_cfg("nested_c", C_LR, rule_kwargs=dict(consistency_weight=C_CW), nesting=dict(ema_taus=LONG_TAUS))]
+    out = run_sweep(pair, sr.run_experiment, paths)
+    t = table(pair)
+    display(t.drop(columns=["seed", "run_id"], errors="ignore").T)
+    if t["avg_incremental_acc"].notna().all():
+        gain = t["avg_incremental_acc"].iloc[1] - t["avg_incremental_acc"].iloc[0]
+        print(f"long tau minus teammate's tau: {gain:+.2f} points avg incremental")
+        print("-> take the long tau to the supervisor" if gain > 0.5 else "-> keep the teammate's tau for the control")'''),
+    md("""
+## 5. Control: A and C on the test set (3 seeds, checkpoints), next to Flat, B and D
+
+Fill `LR` and `C_CW` from sections 3-4. Same stage as the B/D control (`stage1_nested_control`), so `stage1_analysis`,
+`stage1_drift_diagnostic` and `stage1_structural` pick these runs up with no change. For C, checkpoints hold the
+**shadow** (deployed) network, so the probes and drift measure what is evaluated. The summary asserts equal step and
+parameter counts across all arms.
+"""),
+    code(r'''SEEDS = [0, 1, 2]
+LR = {"nested_a": None, "nested_c": None}
+C_CW_CONTROL = None                 # usually = C_CW
+CONTROL_AC = []
+for s in SEEDS:
+    for name, lr in LR.items():
+        if lr is None or (name == "nested_c" and C_CW_CONTROL is None):
+            continue
+        kw = dict(rule_kwargs=dict(consistency_weight=C_CW_CONTROL)) if name == "nested_c" else {}
+        CONTROL_AC.append(sr.arm_cfg(name, stage="stage1_nested_control", epochs=EPOCHS, seed=s, lr=lr,
+                                     eval_split="test", save_checkpoints=True, **kw))
+for name, lr in LR.items():
+    if lr is None or (name == "nested_c" and C_CW_CONTROL is None): print(f"skipping {name}: set LR / C_CW_CONTROL first")
+for c in CONTROL_AC: print(run_id(c), sr.arm_label(c), c["lr"], c["seed"])'''),
+    code("out = run_sweep(CONTROL_AC, sr.run_experiment, paths)"),
+    code(r'''# Flat, B and D control runs from stage1_nested_bd (reused, not re-run), for one table
+BD = [sr.arm_cfg(name, stage="stage1_nested_control", epochs=EPOCHS, seed=s, lr=lr, eval_split="test",
+                 save_checkpoints=True, **kw)
+      for s in SEEDS for name, lr, kw in [("flat", 0.1, {}), ("nested_b", 0.6, {}),
+                                          ("nested_d", 0.7, dict(rule_kwargs=dict(surprise_weight=0.01)))]]
+cdf = table(BD + CONTROL_AC)
+done = cdf[cdf["status"] != "not finished"] if "status" in cdf else cdf
+assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
+cols = ["avg_incremental_acc", "acc_just_learned", "final_avg_acc", "avg_forgetting", "minutes", "peak_gpu_mb"]
+display(done.groupby(["arm", "lr"])[cols].agg(["mean", "std", "count"]).round(2))
+lvl = [c for c in done.columns if c.startswith(("updates/", "rel_displacement/", "deployed_rel_displacement/", "penalty_ratio/"))]
+if lvl: display(done.groupby(["arm", "lr"])[lvl].mean().T.round(4))'''),
+    md("""
+**Next:** re-run `stage1_analysis`, `stage1_drift_diagnostic` and `stage1_structural` (CPU). Finished analyses are
+skipped, so only the new A and C runs are processed, and all arms land in one table.
 """),
 ])
 

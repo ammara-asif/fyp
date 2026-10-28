@@ -123,3 +123,91 @@ def test_fresh_grad_clip_does_not_reclip_accumulator():
     for p, g in zip(params, first):
         if g is not None:
             assert torch.allclose(p.grad, 2 * g, rtol=1e-3, atol=1e-9)
+
+
+# ----------------------------------------------------------------------------- A and C
+
+def test_nested_run_ids_unchanged():
+    # IDs printed by the executed control notebook (runs/stage1_nested_bd.ipynb), seed 0.
+    base = dict(stage="stage1_nested_control", epochs=10, seed=0, eval_split="test", save_checkpoints=True)
+    assert run_id(sr.arm_cfg("flat", **base, lr=0.1)) == "07a97dd12ec3"
+    assert run_id(sr.arm_cfg("nested_b", **base, lr=0.6)) == "ea0983312db5"
+    assert run_id(sr.arm_cfg("nested_d", **base, lr=0.7, rule_kwargs=dict(surprise_weight=0.01))) == "b2316f2cb5f4"
+
+
+def test_a_c_cfg_and_labels():
+    a, c = sr.arm_cfg("nested_a", **TINY), sr.arm_cfg("nested_c", **TINY)
+    assert a["rule_kwargs"] == {"accumulate": "mean"} and a["nesting"]["periods"] == [1, 4, 16]
+    assert c["rule_kwargs"] == {"consistency_weight": 0.1} and c["nesting"]["ema_taus"] == [0.0, 0.75, 0.9375]
+    assert sr.arm_label(a) == "nested_a_ep4" and sr.arm_label(c) == "nested_c_cw0.1_ep4"
+    wide = sr.arm_cfg("nested_a", **dict(TINY, epochs=10), nesting=dict(periods=[1, 16, 256]))
+    assert sr.arm_label(wide) == "nested_a_1-16-256"
+    long_c = sr.arm_cfg("nested_c", **dict(TINY, epochs=10), nesting=dict(ema_taus=[0, 0.99, 0.999]))
+    assert sr.arm_label(long_c) == "nested_c_cw0.1_tau0-0.99-0.999"
+    with pytest.raises(ValueError):
+        sr.arm_cfg("nested_c", **TINY, nesting=dict(ema_taus=[0, 0.5, 1.0]))   # tau = 1 never moves
+    with pytest.raises(KeyError):
+        sr.arm_cfg("nested_a", **TINY, rule_kwargs=dict(surprise_weight=0.1))  # not an A setting
+
+
+def test_a_update_counts(paths):
+    m = _run(sr.arm_cfg("nested_a", **TINY), paths)
+    for row in m["level_log_per_exp"]:
+        assert [row[f"updates/{l}"] for l in LEVELS] == [1, 5, 20]
+    assert [li["period"] for li in m["level_info"]] == [16, 4, 1]
+    assert m["optimizer_steps"] == 40
+
+
+def test_a_matches_d_with_zero_penalty(paths):
+    # Same stepping; D computes the data gradient through a double-backward-capable graph, so
+    # allow float-level differences instead of exact equality.
+    ma = _run(sr.arm_cfg("nested_a", **TINY), paths)
+    md = _run(sr.arm_cfg("nested_d", **TINY, rule_kwargs=dict(surprise_weight=0.0)), paths)
+    assert ma["train_loss_per_exp"] == pytest.approx(md["train_loss_per_exp"], rel=1e-3)
+
+
+def test_c_with_zero_taus_equals_flat(paths):
+    # tau = 0 everywhere and no consistency term: the shadow is an exact copy of the live network
+    # after every step, so C must reproduce Flat exactly (also checks that evaluating the shadow
+    # uses BatchNorm in eval mode, like Flat's evaluation).
+    flat = sr.arm_cfg("flat", **TINY)
+    c0 = sr.arm_cfg("nested_c", **TINY, nesting=dict(ema_taus=[0, 0, 0]),
+                    rule_kwargs=dict(consistency_weight=0.0))
+    mf, mc = _run(flat, paths), _run(c0, paths)
+    assert mf["acc_matrix"] == mc["acc_matrix"]
+    assert mf["train_loss_per_exp"] == pytest.approx(mc["train_loss_per_exp"], rel=1e-6)
+
+
+def test_c_shadow_stays_in_eval_mode():
+    import nested_builder as nb
+    from src.nested.learner import NestedLearner
+    from src.nested.update_rules import build_rule
+
+    torch.manual_seed(0)
+    learner = NestedLearner(sr.BlockResNet18(4, 4), depth=3, ema_taus=[0.0, 0.75, 0.9375]).train()
+    rule = build_rule("ema", learner, lr=0.1, momentum=0.0, weight_decay=0.0)
+    nb.keep_shadow_in_eval_mode(rule)
+    shadow = rule.eval_model()
+    shadow.train()
+    for m in shadow.modules():
+        m.train(True)  # what Avalanche's per-module restore would do
+    assert not any(m.training for m in shadow.modules())
+    bn = shadow.backbone.stem[1]
+    before = bn.running_mean.clone()
+    with torch.no_grad():
+        shadow(torch.randn(8, 3, 32, 32) * 5)
+    assert torch.equal(before, bn.running_mean)  # evaluation leaves its BN statistics alone
+
+
+def test_c_runs_and_checkpoints_shadow(paths):
+    cfg = sr.arm_cfg("nested_c", **TINY, save_checkpoints=True)
+    m = _run(cfg, paths)
+    row = m["level_log_per_exp"][-1]
+    assert all(row[f"updates/{l}"] == 20 for l in LEVELS)  # live weights step every minibatch
+    for l in LEVELS:
+        assert f"deployed_rel_displacement/{l}" in row
+    # the fastest level has tau 0, so its shadow moves exactly as far as the live level
+    assert row[f"deployed_displacement/{LEVELS[2]}"] == pytest.approx(row[f"displacement/{LEVELS[2]}"], rel=1e-5)
+    assert [li["ema_tau"] for li in m["level_info"]] == [0.9375, 0.75, 0.0]
+    model = sr.MODEL_BUILDERS[cfg["model"]](cfg, 4)
+    model.load_state_dict(torch.load(os.path.join(m["checkpoint_dir"], "after_exp01.pt")))

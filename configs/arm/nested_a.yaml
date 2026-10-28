@@ -1,0 +1,8 @@
+# nested_a.yaml — variant A, periodic stepping. Periods are listed FASTEST FIRST.
+# slow_side: input -> stem+layer1 steps every 16 minibatches, layer2+layer3 every 4, layer4+fc every one,
+# each on the mean of its accumulated gradients, all at the base lr. (Same stepping as nested_d with lambda = 0.)
+# The wide-ratio version is this arm with nesting.periods [1, 16, 256].
+name: nested_a
+rule: periodic
+nesting: {depth: 3, slow_side: input, periods: [1, 4, 16]}
+rule_kwargs: {accumulate: mean}

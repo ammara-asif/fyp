@@ -65,16 +65,24 @@ DEFAULTS = dict(
     # linear probes, gradient cosine later). ~4.5 MB x 20 per run for the reduced ResNet-18.
     save_checkpoints=False,
     # Nested arms only (strategy="nested"; see nested_builder.py). Load them with arm_cfg().
-    # rule: "per_level_lr" (B; Flat = B with lr_ratios all 1) or "nested_objectives" (D).
-    # nesting: {depth, slow_side: "input"|"output", lr_ratios (B) | periods (D)}, rates fastest first.
-    # rule_kwargs: D only, {surprise_weight, accumulate}.
+    # rule: "periodic" (A), "per_level_lr" (B; Flat = B with lr_ratios all 1), "ema" (C) or
+    #       "nested_objectives" (D).
+    # nesting: {depth, slow_side: "input"|"output", and the rule's rate vector: periods (A, D),
+    #           lr_ratios (B) or ema_taus (C)}, rates listed fastest level first.
+    # rule_kwargs: A {accumulate}, C {consistency_weight}, D {surprise_weight, accumulate}.
     rule=None,
     nesting=None,
     rule_kwargs=None,
 )
 
 NESTED_KEYS = ("rule", "nesting", "rule_kwargs")
-NESTED_RULES = ("per_level_lr", "nested_objectives")
+# rule -> (its rate vector in `nesting`, how to cast it, its rule_kwargs with defaults written out)
+NESTED_RULES = {
+    "periodic": ("periods", int, {"accumulate": "mean"}),
+    "per_level_lr": ("lr_ratios", float, {}),
+    "ema": ("ema_taus", float, {"consistency_weight": 0.0}),
+    "nested_objectives": ("periods", int, {"surprise_weight": 0.1, "accumulate": "mean"}),
+}
 ARM_DIR = os.path.join(REPO_ROOT, "configs", "arm")
 
 
@@ -85,7 +93,8 @@ def _normalise_nested(cfg):
     that does nothing)."""
     rule = cfg["rule"]
     if rule not in NESTED_RULES:
-        raise ValueError(f"rule must be one of {NESTED_RULES} on this branch, got {rule!r}")
+        raise ValueError(f"rule must be one of {sorted(NESTED_RULES)}, got {rule!r}")
+    own, cast, kw_defaults = NESTED_RULES[rule]
     n = dict(cfg["nesting"] or {})
     if "ordering" in n:
         raise KeyError("nesting.ordering is ambiguous; use slow_side: input|output (plan R1)")
@@ -93,27 +102,28 @@ def _normalise_nested(cfg):
     slow_side = n.pop("slow_side")
     if slow_side not in ("input", "output"):
         raise ValueError(f"slow_side must be 'input' or 'output', got {slow_side!r}")
-    own = "lr_ratios" if rule == "per_level_lr" else "periods"
     if set(n) != {own}:
         raise KeyError(f"rule {rule} takes nesting keys depth, slow_side, {own}; got extra/missing {sorted(set(n) ^ {own})}")
-    vals = [float(v) for v in n[own]] if own == "lr_ratios" else [int(v) for v in n[own]]
+    vals = [cast(v) for v in n[own]]
     if len(vals) != depth:
         raise ValueError(f"{own} needs {depth} values, got {vals}")
+    if own == "ema_taus" and not all(0.0 <= t < 1.0 for t in vals):
+        raise ValueError(f"ema_taus must be in [0, 1), got {vals}")
     if len(set(vals)) == 1:
         slow_side = "input"  # all levels equal (e.g. Flat): orientation has no effect
     cfg["nesting"] = {"depth": depth, "slow_side": slow_side, own: vals}
 
     kw = dict(cfg["rule_kwargs"] or {})
-    if rule == "per_level_lr":
-        if kw:
-            raise KeyError(f"per_level_lr takes no rule_kwargs, got {kw}")
-        cfg["rule_kwargs"] = {}
-    else:
-        out = {"surprise_weight": float(kw.pop("surprise_weight", 0.1)),
-               "accumulate": kw.pop("accumulate", "mean")}
-        if kw:
-            raise KeyError(f"unknown rule_kwargs for {rule}: {sorted(kw)}")
-        cfg["rule_kwargs"] = out
+    unknown = set(kw) - set(kw_defaults)
+    if unknown:
+        raise KeyError(f"unknown rule_kwargs for {rule}: {sorted(unknown)}")
+    out = {}
+    for k, default in kw_defaults.items():  # same key order as before, so D's run_ids are unchanged
+        v = kw.get(k, default)
+        out[k] = float(v) if isinstance(default, float) else v
+    if out.get("accumulate", "mean") not in ("mean", "sum"):
+        raise ValueError(f"accumulate must be 'mean' or 'sum', got {out['accumulate']!r}")
+    cfg["rule_kwargs"] = out
     if cfg["lr_schedule"] != "flat":
         raise ValueError("nested arms set per-level lrs through the rule; leave lr_schedule='flat'")
     if cfg["model"] != "reduced_resnet18_blocks":
@@ -176,7 +186,8 @@ def arm_cfg(name, **overrides):
 
 def arm_label(cfg):
     """Short arm name for tables: 'flat', 'llrd_slow_deep', 'llrd_fast_deep' (+ ratios if not 1-4-16);
-    nested path: 'flat_nl', 'nested_b', 'nested_d_lam<λ>' (+ '_slow_output', + rates if not 1-4-16).
+    nested path: 'flat_nl', 'nested_a[_sum]', 'nested_b', 'nested_c_cw<w>', 'nested_d_lam<λ>'
+    (+ '_slow_output', + rates if not the default 1-4-16 / C's 0-0.75-0.9375).
     Display only; it does not change any config or run_id.
     NB the llrd_* labels use the OLD orientation names: llrd_fast_deep = slow_side input (plan R1).
     Runs with an epoch count other than the standard 10 get '_ep<N>', so tables never mix them."""
@@ -188,19 +199,26 @@ def arm_label(cfg):
 
 def _arm_label(cfg):
     if cfg["strategy"] == "nested":
-        n = cfg["nesting"]
-        if cfg["rule"] == "per_level_lr":
+        n, kw, rule = cfg["nesting"], cfg["rule_kwargs"], cfg["rule"]
+        default_rates = [1, 4, 16]
+        if rule == "per_level_lr":
             rates = [round(1 / r, 6) for r in n["lr_ratios"]]
             if len(set(rates)) == 1:
                 return "flat_nl"
             lab = "nested_b"
+        elif rule == "periodic":
+            rates = n["periods"]
+            lab = "nested_a" + ("_sum" if kw["accumulate"] == "sum" else "")
+        elif rule == "ema":
+            rates, default_rates = n["ema_taus"], [0.0, 0.75, 0.9375]
+            lab = f"nested_c_cw{kw['consistency_weight']:g}"
         else:
             rates = n["periods"]
-            lab = f"nested_d_lam{cfg['rule_kwargs']['surprise_weight']:g}"
+            lab = f"nested_d_lam{kw['surprise_weight']:g}"
         if n["slow_side"] != "input":
             lab += "_slow_output"
-        if list(rates) != [1, 4, 16]:
-            lab += "_" + "-".join(f"{r:g}" for r in rates)
+        if list(rates) != default_rates:
+            lab += ("_tau" if rule == "ema" else "_") + "-".join(f"{r:g}" for r in rates)
         return lab
     if cfg["lr_schedule"] == "flat":
         return "flat"
