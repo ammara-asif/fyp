@@ -50,9 +50,11 @@ def test_nested_cfg_normalisation():
         sr.arm_cfg("nested_b", **TINY, nesting=dict(periods=[1, 4, 16]))
     with pytest.raises(KeyError):
         sr.arm_cfg("nested_b", **TINY, nesting=dict(ordering="slow_deep"))
-    assert sr.arm_label(sr.arm_cfg("flat", **TINY)) == "flat_nl"
-    assert sr.arm_label(sr.arm_cfg("nested_b", **TINY)) == "nested_b"
-    assert sr.arm_label(a) == "nested_d_lam0.1"
+    # TINY uses 4 epochs, so labels carry '_ep4' (runs not at the standard 10 epochs are kept apart in tables)
+    assert sr.arm_label(sr.arm_cfg("flat", **TINY)) == "flat_nl_ep4"
+    assert sr.arm_label(sr.arm_cfg("nested_b", **TINY)) == "nested_b_ep4"
+    assert sr.arm_label(a) == "nested_d_lam0.1_ep4"
+    assert sr.arm_label(sr.arm_cfg("nested_b", **dict(TINY, epochs=10))) == "nested_b"
 
 
 def test_block_resnet_init_matches_my_resnet():
