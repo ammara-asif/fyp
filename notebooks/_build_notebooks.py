@@ -357,6 +357,54 @@ fig.tight_layout()
 os.makedirs(f"{paths['root']}/figures", exist_ok=True)
 fig.savefig(f"{paths['root']}/figures/stage1_probe_control.png", dpi=200, bbox_inches="tight")
 plt.show()"""),
+    md("""
+### Report figure: three readouts of the same old-task images (final model)
+
+"Old tasks" = tasks 1-19; the last task is left out, because it was just trained and would inflate every bar.
+For each arm, on the final checkpoint's old tasks, three ways of reading the same test images (all from saved results, nothing is retrained):
+
+- **Linear probe (layer4 features):** a fresh 5-way classifier fitted on the final features, i.e. is the information still there.
+- **Task-IL:** the network's own output layer, restricted to the task's 5 classes (task id given).
+- **Class-IL:** the network's own output layer over all 100 classes (what the benchmark scores).
+
+Dashed line = chance for the 5-way readouts (20%). Error bars are the seed std; the x-label gives each arm's seed count.
+"""),
+    code(r"""rows = []
+for a in ACFGS:
+    r = load_result(a, paths)
+    if r is None: continue
+    m = r["metrics"]; c = m["train_config"]
+    A = np.array(sa.load_result_by_id(m["train_run_id"], paths)["metrics"]["acc_matrix"])
+    T = A.shape[0]; l4 = len(m["level_modules"]) - 1
+    rows.append({"arm": sr.arm_label(c), "lr": c["lr"], "seed": c["seed"],
+                 "probe_l3": np.mean(np.array(m["probe_final"])[1, :T - 1]),
+                 "probe_l4": np.mean(np.array(m["probe_final"])[l4, :T - 1]),
+                 "task_il": np.nanmean(np.array(m["til_matrix"], dtype=float)[T - 1, :T - 1]),
+                 "class_il": A[T - 1, :T - 1].mean(),
+                 "last_task_class_il": A[T - 1, T - 1]})
+odf = pd.DataFrame(rows)
+OLD_ARMS = [("flat_nl", 0.1, "Flat"), ("nested_b", 0.6, "B"), ("nested_a", 0.5, "A"),
+            ("nested_c_cw0.1", 0.1, "C"), ("nested_d_lam0.01", 0.7, "D")]
+sel = pd.concat([odf[(odf["arm"] == arm) & np.isclose(odf["lr"], lr)].assign(name=nm) for arm, lr, nm in OLD_ARMS])
+tab = sel.groupby("name", sort=False)[["probe_l3", "probe_l4", "task_il", "class_il", "last_task_class_il"]].agg(["mean", "std"]).round(2)
+tab["n_seeds"] = sel.groupby("name", sort=False).size()
+display(tab)
+
+READS = [("probe_l4", "Linear probe (layer4)", "tab:green"), ("task_il", "Task-IL (own output layer)", "tab:blue"),
+         ("class_il", "Class-IL (all 100 classes)", "tab:red")]
+fig, ax = plt.subplots(figsize=(9, 4.2))
+names = [nm for _, _, nm in OLD_ARMS if nm in set(sel["name"])]
+x = np.arange(len(names)); w = 0.26
+for k, (col, lab, colr) in enumerate(READS):
+    g = sel.groupby("name", sort=False)[col]
+    ax.bar(x + (k - 1) * w, g.mean().loc[names], w, yerr=g.std().loc[names], capsize=3, color=colr, label=lab)
+ax.axhline(20, ls="--", color="k", lw=1); ax.text(len(names) - 0.5, 21, "chance, 5-way (20%)", ha="right", fontsize=8)
+ax.set_xticks(x, [f"{nm}\n(n={int((sel['name'] == nm).sum())})" for nm in names])
+ax.set(ylabel="accuracy on old tasks (%)", title="Same old-task images, three readouts (final model, tasks 1-19)")
+ax.legend(fontsize=8); ax.grid(axis="y", alpha=.3)
+fig.tight_layout()
+fig.savefig(f"{paths['root']}/figures/stage1_readouts.png", dpi=200, bbox_inches="tight")
+plt.show()"""),
 ])
 
 write("stage1_drift_diagnostic.ipynb", [
