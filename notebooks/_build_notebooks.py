@@ -397,12 +397,14 @@ names = [nm for _, _, nm in OLD_ARMS if nm in set(sel["name"])]
 x = np.arange(len(names)); w = 0.26
 for k, (col, lab, colr) in enumerate(READS):
     g = sel.groupby("name", sort=False)[col]
-    ax.bar(x + (k - 1) * w, g.mean().loc[names], w, yerr=g.std().loc[names], capsize=3, color=colr, label=lab)
+    bars = ax.bar(x + (k - 1) * w, g.mean().loc[names], w, yerr=g.std().loc[names], capsize=3, color=colr, label=lab)
+    ax.bar_label(bars, fmt="%.1f", padding=3, fontsize=8)   # a 0.0 bar has no height, so print the value
 ax.axhline(20, ls="--", color="k", lw=1); ax.text(len(names) - 0.5, 21, "chance, 5-way (20%)", ha="right", fontsize=8)
 ax.set_xticks(x, [f"{nm}\n(n={int((sel['name'] == nm).sum())})" for nm in names])
 ax.set(ylabel="accuracy on old tasks (%)", title="Same old-task images, three readouts (final model, tasks 1-19)")
 ax.legend(fontsize=8); ax.grid(axis="y", alpha=.3)
 fig.tight_layout()
+os.makedirs(f"{paths['root']}/figures", exist_ok=True)
 fig.savefig(f"{paths['root']}/figures/stage1_readouts.png", dpi=200, bbox_inches="tight")
 plt.show()"""),
 ])
