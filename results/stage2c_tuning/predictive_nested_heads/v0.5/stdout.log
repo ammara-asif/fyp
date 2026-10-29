@@ -1,0 +1,18 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm nested_heads --stream disjoint --theta 0.5 --val --out /home/appadmin/FYP2/results/stage2c_tuning/predictive_nested_heads/v0.5 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train; test set untouched
+predictive_nested_heads_disjoint_th0.5 seed=0 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  58.00 oracle  58.00  task-IL  58.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  18s
+  task  1  learners  1  acc soft  44.60 oracle  44.60  task-IL  60.40  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  13s
+  task  2  learners  1  acc soft  31.73 oracle  31.73  task-IL  58.67  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  14s
+    split: learner 1 -> child 2 takes [17]
+  task  3  learners  2  acc soft  27.70 oracle  29.50  task-IL  47.60  route soft  95.00 own  92.7 cons  93.1 shared  96.1 lr  86.2  22s
+  task  4  learners  2  acc soft  33.12 oracle  34.72  task-IL  57.36  route soft  95.76 own  95.4 cons  95.4 shared  96.2 lr  87.9  16s
+  task  5  learners  2  acc soft  26.47 oracle  32.93  task-IL  56.80  route soft  76.13 own  67.8 cons  67.5 shared  82.6 lr  66.0  23s
+  task  6  learners  2  acc soft  21.94 oracle  27.94  task-IL  59.60  route soft  81.94 own  68.7 cons  83.2 shared  84.6 lr  65.5  16s
+  task  7  learners  2  acc soft  21.30 oracle  26.75  task-IL  60.10  route soft  81.25 own  67.8 cons  80.3 shared  86.4 lr  64.8  16s
+  task  8  learners  2  acc soft  20.27 oracle  25.16  task-IL  62.27  route soft  86.44 own  85.3 cons  86.1 shared  87.7 lr  62.0  17s
+  task  9  learners  2  acc soft  22.20 oracle  26.80  task-IL  62.84  route soft  83.28 own  79.8 cons  81.2 shared  85.0 lr  64.0  22s
+
+final acc soft 22.20  oracle 26.80  task-IL 62.84 (forgetting 4.13, new-task 60.56)  routing soft 83.28  learners 2  splits 1 + 0 on arrival  (3.1 min) -> /home/appadmin/FYP2/results/stage2c_tuning/predictive_nested_heads/v0.5/summary.json

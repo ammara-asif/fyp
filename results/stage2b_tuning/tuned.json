@@ -1,0 +1,5 @@
+{
+  "predictive_nested_a": 0.5,
+  "predictive_flat": 0.5,
+  "reactive_nested_a": 0.3
+}

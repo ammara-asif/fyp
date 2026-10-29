@@ -1,10 +1,14 @@
-# flat_llrd.yaml — THE CONTROL. One group per block, geometric decay matched to (1,4,16)
-# over the three slabs: output slab x1, middle slab x1/4, input slab x1/16.
+# flat_llrd.yaml — THE CONTROL, matched to nested_a.
+# nested_a splits 6 blocks into 3 slabs at periods (1, 4, 16):
+#   stem+layer1 -> 16,  layer2+layer3 -> 4,  layer4+fc -> 1
+# This arm uses the SAME 3 slabs at lr ratios (1, 1/4, 1/16). Anything with a
+# different split is not the matched control and cannot settle Gate 1.
 name: flat_llrd
 rule: per_level_lr
+lr: 0.5                      # tuned; LLRD needs a higher base, its deep slabs run at /4 and /16
 nesting:
-  depth: 6
-  periods: [1, 1, 1, 1, 1, 1]
-  lr_ratios: [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125]   # fastest first; slow_deep puts 0.03125 on stem
+  depth: 3
+  periods: [1, 1, 1]
+  lr_ratios: [1.0, 0.25, 0.0625]   # fastest first; slow_deep puts 0.0625 on stem+layer1
   ordering: slow_deep
 rule_kwargs: {}

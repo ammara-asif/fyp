@@ -1,0 +1,13 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger reactive --arm nested_a --stream disjoint --delta 0.05 --val --out /home/appadmin/FYP2/results/stage2b_tuning_smoke/reactive_nested_a/v0.05 --fake-data --n-tasks 6 --epochs 2
+VALIDATION MODE: evaluating on 10% of train held out; test set untouched
+reactive_nested_a_disjoint seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  20.00 conf  20.00  route proto 100.00 conf 100.00  conflict   -    4s
+  task  1  learners  1  acc proto  10.00 conf  10.00  route proto 100.00 conf 100.00  conflict   -    1s
+  task  2  learners  1  acc proto   7.78 conf   7.78  route proto 100.00 conf 100.00  conflict   -    1s
+  task  3  learners  1  acc proto   5.00 conf   5.00  route proto 100.00 conf 100.00  conflict   -    1s
+  task  4  learners  1  acc proto   4.67 conf   4.67  route proto 100.00 conf 100.00  conflict   -    1s
+  task  5  learners  1  acc proto   3.33 conf   3.33  route proto 100.00 conf 100.00  conflict   -    1s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc proto 3.33 conf 3.33  learners 1  splits 0  absorbs 1  conflict p50 nan  (0.2 min) -> /home/appadmin/FYP2/results/stage2b_tuning_smoke/reactive_nested_a/v0.05/summary.json

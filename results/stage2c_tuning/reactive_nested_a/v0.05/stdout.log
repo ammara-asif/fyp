@@ -1,0 +1,38 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger reactive --arm nested_a --stream disjoint --delta 0.05 --val --out /home/appadmin/FYP2/results/stage2c_tuning/reactive_nested_a/v0.05 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train; test set untouched
+reactive_nested_a_disjoint_d0.05 seed=0 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  57.20 oracle  57.20  task-IL  57.20  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  15s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9]
+  task  1  learners  2  acc soft  54.20 oracle  66.40  task-IL  66.40  route soft  74.80 own  73.8 cons  73.6 shared  70.0 lr  72.6  15s
+    split: learner 2 -> child 3 takes [12, 13, 14]
+    split: learner 1 -> child 4 takes [10, 11]
+  task  2  learners  4  acc soft  43.33 oracle  67.33  task-IL  59.33  route soft  57.87 own  51.1 cons  55.5 shared  49.6 lr  56.0  19s
+    split: learner 2 -> child 5 takes [15, 17, 18, 19]
+    split: learner 1 -> child 6 takes [16]
+  task  3  learners  6  acc soft  38.70 oracle  67.90  task-IL  49.70  route soft  52.40 own  45.7 cons  49.4 shared  45.0 lr  46.7  22s
+    split: learner 4 -> child 7 takes [23]
+    split: learner 2 -> child 8 takes [21, 22, 24]
+    split: learner 5 -> child 9 takes [20]
+  task  4  learners  9  acc soft  38.16 oracle  74.72  task-IL  46.40  route soft  46.24 own  40.4 cons  45.0 shared  38.6 lr  42.7  30s
+    split: learner 3 -> child 10 takes [28, 29]
+    split: learner 7 -> child 11 takes [26]
+    split: learner 4 -> child 12 takes [25, 27]
+  task  5  learners 12  acc soft  33.47 oracle  76.00  task-IL  41.80  route soft  41.00 own  31.7 cons  39.9 shared  32.3 lr  37.6  32s
+    split: learner 12 -> child 13 takes [32]
+    split: learner 1 -> child 14 takes [33]
+    split: learner 3 -> child 15 takes [34]
+    split: learner 2 -> child 16 takes [31]
+    split: learner 5 -> child 17 takes [30]
+  task  6  learners 17  acc soft  30.97 oracle  79.77  task-IL  38.11  route soft  36.74 own  30.7 cons  35.6 shared  27.1 lr  32.3  48s
+    split: learner 11 -> child 18 takes [37]
+    split: learner 2 -> child 19 takes [35, 36, 38]
+    split: learner 5 -> child 20 takes [39]
+  task  7  learners 20  acc soft  28.05 oracle  79.80  task-IL  35.85  route soft  33.00 own  28.4 cons  31.8 shared  24.1 lr  30.2  36s
+  task  8  learners 20  acc soft  25.82 oracle  71.42  task-IL  35.16  route soft  34.22 own  32.3 cons  31.7 shared  25.7 lr  29.8  36s
+  task  9  learners 20  acc soft  27.44 oracle  70.28  task-IL  38.08  route soft  34.88 own  31.6 cons  31.4 shared  29.4 lr  30.0  30s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc soft 27.44  oracle 70.28  task-IL 38.08 (forgetting 4.04, new-task 39.80)  routing soft 34.88  learners 20  splits 19 + 0 on arrival  (4.8 min) -> /home/appadmin/FYP2/results/stage2c_tuning/reactive_nested_a/v0.05/summary.json

@@ -1,0 +1,1233 @@
+{
+  "run": "reactive_nested_a_recurring",
+  "stage": "2b",
+  "trigger": "reactive",
+  "arm": "nested_a",
+  "stream": "recurring",
+  "seed": 0,
+  "theta": 0.1,
+  "delta": 0.3,
+  "epochs": 5,
+  "lr": 0.1,
+  "final_avg_acc": 18.46,
+  "final_avg_acc_conf": 11.540000000000001,
+  "avg_incremental_acc": 23.13913492063492,
+  "avg_incremental_acc_conf": 18.035468253968254,
+  "forgetting": 13.760000000000002,
+  "forgetting_conf": 24.52,
+  "n_modules": 6,
+  "n_tasks": 20,
+  "n_splits": 5,
+  "n_absorbs": 20,
+  "routing_acc_test": 25.62,
+  "routing_acc_conf": 14.62,
+  "params": 6655440,
+  "anchor_kb": 3750.0,
+  "conflict_pct": {
+    "10": NaN,
+    "25": NaN,
+    "50": NaN,
+    "75": NaN,
+    "90": NaN
+  },
+  "split_log": [
+    {
+      "task": 1,
+      "parent": 1,
+      "child": 2,
+      "classes": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "signal": 0.48000000417232513,
+      "step": 240
+    },
+    {
+      "task": 2,
+      "parent": 1,
+      "child": 3,
+      "classes": [
+        10,
+        13,
+        14
+      ],
+      "signal": 0.5199999809265137,
+      "step": 272
+    },
+    {
+      "task": 3,
+      "parent": 3,
+      "child": 4,
+      "classes": [
+        15,
+        17,
+        18,
+        19
+      ],
+      "signal": 0.2666666805744171,
+      "step": 480
+    },
+    {
+      "task": 6,
+      "parent": 3,
+      "child": 5,
+      "classes": [
+        32,
+        33
+      ],
+      "signal": 0.34285716712474823,
+      "step": 928
+    },
+    {
+      "task": 8,
+      "parent": 5,
+      "child": 6,
+      "classes": [
+        40,
+        41
+      ],
+      "signal": 0.2666667103767395,
+      "step": 1312
+    }
+  ],
+  "event_log": [
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 0,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 1,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 2,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 3,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 4,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 5,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 6,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 7,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 8,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 9,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 10,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 11,
+      "uid": 2
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 12,
+      "uid": 2
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 13,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 14,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "absorb",
+      "uid": 2,
+      "classes": [
+        11,
+        12
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 15,
+      "uid": 3
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 16,
+      "uid": 1
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 17,
+      "uid": 3
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 18,
+      "uid": 3
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 19,
+      "uid": 3
+    },
+    {
+      "task": 3,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        16
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 20,
+      "uid": 2
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 21,
+      "uid": 4
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 22,
+      "uid": 2
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 23,
+      "uid": 1
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 24,
+      "uid": 3
+    },
+    {
+      "task": 4,
+      "event": "absorb",
+      "uid": 4,
+      "classes": [
+        21
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 4,
+      "event": "absorb",
+      "uid": 2,
+      "classes": [
+        20,
+        22
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 4,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        23
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 4,
+      "event": "absorb",
+      "uid": 3,
+      "classes": [
+        24
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 25,
+      "uid": 3
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 26,
+      "uid": 4
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 27,
+      "uid": 2
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 28,
+      "uid": 3
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 29,
+      "uid": 3
+    },
+    {
+      "task": 5,
+      "event": "absorb",
+      "uid": 2,
+      "classes": [
+        27
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 5,
+      "event": "absorb",
+      "uid": 3,
+      "classes": [
+        25,
+        28,
+        29
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 5,
+      "event": "absorb",
+      "uid": 4,
+      "classes": [
+        26
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 30,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 31,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 32,
+      "uid": 3
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 33,
+      "uid": 3
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 34,
+      "uid": 4
+    },
+    {
+      "task": 6,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        30,
+        31
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 6,
+      "event": "absorb",
+      "uid": 4,
+      "classes": [
+        34
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 35,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 36,
+      "uid": 5
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 38,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 39,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 37,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "absorb",
+      "uid": 5,
+      "classes": [
+        36
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 7,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        35,
+        37,
+        38,
+        39
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 40,
+      "uid": 5
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 41,
+      "uid": 5
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 42,
+      "uid": 2
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 43,
+      "uid": 4
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 44,
+      "uid": 1
+    },
+    {
+      "task": 8,
+      "event": "absorb",
+      "uid": 4,
+      "classes": [
+        43
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 8,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        44
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 8,
+      "event": "absorb",
+      "uid": 2,
+      "classes": [
+        42
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 45,
+      "uid": 4
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 46,
+      "uid": 3
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 47,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 48,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 49,
+      "uid": 3
+    },
+    {
+      "task": 9,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        47,
+        48
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 9,
+      "event": "absorb",
+      "uid": 3,
+      "classes": [
+        46,
+        49
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 9,
+      "event": "absorb",
+      "uid": 4,
+      "classes": [
+        45
+      ],
+      "reason": "no-conflict"
+    }
+  ],
+  "per_task": [
+    {
+      "task": 0,
+      "group": 0,
+      "n_modules": 1,
+      "avg_acc": 61.4,
+      "avg_acc_conf": 61.4,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 375.0,
+      "secs": 10.808008193969727
+    },
+    {
+      "task": 1,
+      "group": 1,
+      "n_modules": 2,
+      "avg_acc": 41.6,
+      "avg_acc_conf": 41.4,
+      "routing_acc_test": 64.4,
+      "routing_acc_conf": 60.9,
+      "splits": 1,
+      "mean_conflict": null,
+      "params": 2218480,
+      "anchor_kb": 750.0,
+      "secs": 7.244669437408447
+    },
+    {
+      "task": 2,
+      "group": 2,
+      "n_modules": 3,
+      "avg_acc": 31.933333333333337,
+      "avg_acc_conf": 28.0,
+      "routing_acc_test": 44.266666666666666,
+      "routing_acc_conf": 38.333333333333336,
+      "splits": 2,
+      "mean_conflict": null,
+      "params": 3327720,
+      "anchor_kb": 1125.0,
+      "secs": 10.023530006408691
+    },
+    {
+      "task": 3,
+      "group": 3,
+      "n_modules": 4,
+      "avg_acc": 24.85,
+      "avg_acc_conf": 20.45,
+      "routing_acc_test": 36.25,
+      "routing_acc_conf": 29.7,
+      "splits": 3,
+      "mean_conflict": null,
+      "params": 4436960,
+      "anchor_kb": 1500.0,
+      "secs": 9.547631740570068
+    },
+    {
+      "task": 4,
+      "group": 4,
+      "n_modules": 4,
+      "avg_acc": 22.880000000000003,
+      "avg_acc_conf": 19.2,
+      "routing_acc_test": 32.0,
+      "routing_acc_conf": 26.4,
+      "splits": 3,
+      "mean_conflict": null,
+      "params": 4436960,
+      "anchor_kb": 1875.0,
+      "secs": 15.873941898345947
+    },
+    {
+      "task": 5,
+      "group": 5,
+      "n_modules": 4,
+      "avg_acc": 21.366666666666664,
+      "avg_acc_conf": 21.96666666666667,
+      "routing_acc_test": 32.5,
+      "routing_acc_conf": 32.03333333333333,
+      "splits": 3,
+      "mean_conflict": null,
+      "params": 4436960,
+      "anchor_kb": 2250.0,
+      "secs": 12.22957468032837
+    },
+    {
+      "task": 6,
+      "group": 6,
+      "n_modules": 5,
+      "avg_acc": 18.057142857142857,
+      "avg_acc_conf": 11.057142857142859,
+      "routing_acc_test": 28.34285714285714,
+      "routing_acc_conf": 15.685714285714285,
+      "splits": 4,
+      "mean_conflict": null,
+      "params": 5546200,
+      "anchor_kb": 2625.0,
+      "secs": 12.872713088989258
+    },
+    {
+      "task": 7,
+      "group": 7,
+      "n_modules": 5,
+      "avg_acc": 18.6,
+      "avg_acc_conf": 12.3,
+      "routing_acc_test": 28.35,
+      "routing_acc_conf": 17.2,
+      "splits": 4,
+      "mean_conflict": null,
+      "params": 5546200,
+      "anchor_kb": 3000.0,
+      "secs": 11.259954929351807
+    },
+    {
+      "task": 8,
+      "group": 8,
+      "n_modules": 6,
+      "avg_acc": 18.355555555555554,
+      "avg_acc_conf": 12.555555555555555,
+      "routing_acc_test": 27.4,
+      "routing_acc_conf": 16.733333333333334,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3375.0,
+      "secs": 15.932613134384155
+    },
+    {
+      "task": 9,
+      "group": 9,
+      "n_modules": 6,
+      "avg_acc": 16.44,
+      "avg_acc_conf": 11.08,
+      "routing_acc_test": 25.7,
+      "routing_acc_conf": 14.44,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 14.034510612487793
+    },
+    {
+      "task": 10,
+      "group": 0,
+      "n_modules": 6,
+      "avg_acc": 17.68,
+      "avg_acc_conf": 11.16,
+      "routing_acc_test": 26.58,
+      "routing_acc_conf": 14.12,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 7.605673551559448
+    },
+    {
+      "task": 11,
+      "group": 1,
+      "n_modules": 6,
+      "avg_acc": 17.8,
+      "avg_acc_conf": 10.8,
+      "routing_acc_test": 26.92,
+      "routing_acc_conf": 13.52,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 5.823495864868164
+    },
+    {
+      "task": 12,
+      "group": 2,
+      "n_modules": 6,
+      "avg_acc": 18.8,
+      "avg_acc_conf": 11.780000000000001,
+      "routing_acc_test": 27.9,
+      "routing_acc_conf": 14.56,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 8.996685028076172
+    },
+    {
+      "task": 13,
+      "group": 3,
+      "n_modules": 6,
+      "avg_acc": 18.099999999999998,
+      "avg_acc_conf": 13.280000000000001,
+      "routing_acc_test": 26.94,
+      "routing_acc_conf": 16.7,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 9.08387279510498
+    },
+    {
+      "task": 14,
+      "group": 4,
+      "n_modules": 6,
+      "avg_acc": 17.919999999999998,
+      "avg_acc_conf": 14.279999999999998,
+      "routing_acc_test": 25.46,
+      "routing_acc_conf": 18.98,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 13.517910718917847
+    },
+    {
+      "task": 15,
+      "group": 5,
+      "n_modules": 6,
+      "avg_acc": 19.52,
+      "avg_acc_conf": 14.979999999999999,
+      "routing_acc_test": 26.94,
+      "routing_acc_conf": 19.46,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 11.27544116973877
+    },
+    {
+      "task": 16,
+      "group": 6,
+      "n_modules": 6,
+      "avg_acc": 19.320000000000004,
+      "avg_acc_conf": 12.46,
+      "routing_acc_test": 25.64,
+      "routing_acc_conf": 15.56,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 11.004440784454346
+    },
+    {
+      "task": 17,
+      "group": 7,
+      "n_modules": 6,
+      "avg_acc": 20.64,
+      "avg_acc_conf": 11.42,
+      "routing_acc_test": 29.18,
+      "routing_acc_conf": 14.18,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 8.895875930786133
+    },
+    {
+      "task": 18,
+      "group": 8,
+      "n_modules": 6,
+      "avg_acc": 19.06,
+      "avg_acc_conf": 9.599999999999998,
+      "routing_acc_test": 26.72,
+      "routing_acc_conf": 12.52,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 13.484174251556396
+    },
+    {
+      "task": 19,
+      "group": 9,
+      "n_modules": 6,
+      "avg_acc": 18.46,
+      "avg_acc_conf": 11.540000000000001,
+      "routing_acc_test": 25.62,
+      "routing_acc_conf": 14.62,
+      "splits": 5,
+      "mean_conflict": null,
+      "params": 6655440,
+      "anchor_kb": 3750.0,
+      "secs": 11.1327486038208
+    }
+  ],
+  "per_group_history": {
+    "proto": {
+      "0": [
+        61.4,
+        41.6,
+        38.6,
+        26.2,
+        20.2,
+        22.6,
+        21.6,
+        24.0,
+        16.0,
+        15.6,
+        17.2,
+        16.8,
+        18.0,
+        11.6,
+        16.2,
+        17.8,
+        19.2,
+        18.0,
+        15.2,
+        15.2
+      ],
+      "1": [
+        41.6,
+        20.6,
+        23.8,
+        15.8,
+        10.0,
+        7.8,
+        10.6,
+        13.0,
+        12.6,
+        13.4,
+        12.0,
+        13.8,
+        13.4,
+        14.6,
+        18.6,
+        21.2,
+        22.0,
+        16.6,
+        15.2
+      ],
+      "2": [
+        36.6,
+        23.0,
+        25.8,
+        23.0,
+        17.8,
+        21.0,
+        20.2,
+        17.4,
+        16.6,
+        14.2,
+        17.2,
+        14.4,
+        12.8,
+        18.8,
+        16.8,
+        20.6,
+        21.2,
+        19.2
+      ],
+      "3": [
+        26.4,
+        20.0,
+        22.0,
+        17.8,
+        17.4,
+        15.4,
+        14.0,
+        14.2,
+        15.0,
+        14.6,
+        17.2,
+        15.0,
+        15.2,
+        11.2,
+        13.6,
+        15.6,
+        16.8
+      ],
+      "4": [
+        32.6,
+        36.2,
+        24.4,
+        26.0,
+        31.4,
+        21.6,
+        23.0,
+        25.0,
+        26.4,
+        30.8,
+        20.8,
+        25.4,
+        30.6,
+        36.2,
+        36.8,
+        32.8
+      ],
+      "5": [
+        14.4,
+        6.0,
+        8.8,
+        6.8,
+        7.0,
+        7.2,
+        8.0,
+        8.0,
+        7.6,
+        9.0,
+        7.0,
+        7.0,
+        9.8,
+        13.8,
+        10.8
+      ],
+      "6": [
+        31.0,
+        27.6,
+        21.4,
+        18.2,
+        21.4,
+        21.2,
+        21.8,
+        21.6,
+        21.6,
+        21.0,
+        30.8,
+        21.4,
+        20.4,
+        17.8
+      ],
+      "7": [
+        13.4,
+        17.4,
+        16.6,
+        18.6,
+        18.8,
+        17.4,
+        16.0,
+        19.2,
+        20.8,
+        12.8,
+        17.4,
+        10.4,
+        13.0
+      ],
+      "8": [
+        23.6,
+        22.6,
+        23.2,
+        24.2,
+        24.4,
+        20.2,
+        24.8,
+        25.0,
+        21.8,
+        23.8,
+        23.0,
+        19.4
+      ],
+      "9": [
+        18.8,
+        22.0,
+        22.8,
+        26.4,
+        28.2,
+        25.2,
+        25.6,
+        21.8,
+        23.6,
+        17.6,
+        24.4
+      ]
+    },
+    "conf": {
+      "0": [
+        61.4,
+        39.8,
+        24.4,
+        15.6,
+        13.2,
+        17.6,
+        10.4,
+        7.8,
+        6.8,
+        4.8,
+        12.8,
+        13.0,
+        12.2,
+        8.0,
+        13.0,
+        13.6,
+        10.0,
+        2.8,
+        3.0,
+        3.0
+      ],
+      "1": [
+        43.0,
+        14.4,
+        10.6,
+        3.6,
+        11.0,
+        3.8,
+        8.0,
+        12.4,
+        12.8,
+        13.0,
+        13.6,
+        10.4,
+        10.4,
+        6.2,
+        17.0,
+        14.8,
+        9.0,
+        4.6,
+        4.6
+      ],
+      "2": [
+        45.2,
+        24.6,
+        27.8,
+        18.8,
+        8.8,
+        13.4,
+        10.2,
+        10.0,
+        9.4,
+        4.4,
+        21.6,
+        21.6,
+        9.0,
+        10.0,
+        8.6,
+        6.0,
+        5.0,
+        6.4
+      ],
+      "3": [
+        31.0,
+        13.2,
+        28.2,
+        7.2,
+        9.8,
+        13.0,
+        11.8,
+        12.4,
+        13.2,
+        13.0,
+        25.4,
+        13.6,
+        15.8,
+        14.4,
+        11.8,
+        11.6,
+        11.4
+      ],
+      "4": [
+        38.2,
+        34.4,
+        4.8,
+        14.4,
+        15.4,
+        8.4,
+        7.2,
+        8.2,
+        8.4,
+        13.2,
+        35.6,
+        20.8,
+        10.0,
+        13.2,
+        6.8,
+        12.6
+      ],
+      "5": [
+        21.8,
+        3.8,
+        6.0,
+        2.6,
+        1.6,
+        1.4,
+        1.6,
+        0.6,
+        0.8,
+        2.2,
+        13.2,
+        7.2,
+        5.4,
+        4.2,
+        1.6
+      ],
+      "6": [
+        38.6,
+        20.4,
+        8.6,
+        8.8,
+        9.2,
+        10.2,
+        10.6,
+        12.2,
+        13.2,
+        11.4,
+        35.2,
+        20.4,
+        16.0,
+        16.6
+      ],
+      "7": [
+        18.6,
+        10.0,
+        8.0,
+        10.2,
+        10.2,
+        9.0,
+        9.0,
+        13.6,
+        13.4,
+        2.0,
+        23.6,
+        17.4,
+        16.6
+      ],
+      "8": [
+        34.0,
+        29.0,
+        29.0,
+        25.8,
+        27.6,
+        25.8,
+        25.2,
+        26.0,
+        17.0,
+        18.2,
+        24.6,
+        18.8
+      ],
+      "9": [
+        15.6,
+        7.0,
+        7.8,
+        4.4,
+        6.4,
+        11.2,
+        8.6,
+        5.4,
+        3.8,
+        2.8,
+        23.8
+      ]
+    }
+  },
+  "minutes": 3.7638898452123004,
+  "fake_data": false,
+  "val": false
+}

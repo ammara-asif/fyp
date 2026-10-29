@@ -1,0 +1,10 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm flat --stream disjoint --theta 0.1 --seed 0 --out /home/appadmin/FYP2/results/stage2b_smoke/predictive_flat_disjoint_th0.1/seed0 --fake-data --epochs 2 --n-tasks 6
+predictive_flat_disjoint_th0.1 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc proto  20.00 conf  20.00  route proto 100.00 conf 100.00  conflict   -    4s
+  task  1  learners  1  acc proto  10.50 conf  10.50  route proto 100.00 conf 100.00  conflict   -    1s
+  task  2  learners  1  acc proto   7.33 conf   7.33  route proto 100.00 conf 100.00  conflict   -    1s
+  task  3  learners  1  acc proto   5.00 conf   5.00  route proto 100.00 conf 100.00  conflict   -    1s
+  task  4  learners  1  acc proto   5.80 conf   5.80  route proto 100.00 conf 100.00  conflict   -    1s
+  task  5  learners  1  acc proto   3.33 conf   3.33  route proto 100.00 conf 100.00  conflict 0.065  1s
+
+final acc proto 3.33 conf 3.33  learners 1  splits 0  absorbs 1  conflict p50 0.065  (0.2 min) -> /home/appadmin/FYP2/results/stage2b_smoke/predictive_flat_disjoint_th0.1/seed0/summary.json

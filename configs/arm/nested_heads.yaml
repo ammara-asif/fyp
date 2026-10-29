@@ -1,0 +1,11 @@
+# nested_heads.yaml — same 3 timescales as nested_a, different boundaries:
+#   slow (16)  = stem + layer1 + layer2 + layer3   (~25% of parameters)
+#   medium (4) = layer4                            (~74%)
+#   fast (1)   = fc + 'mine' head                  (~1.5%)
+# The layout that makes a Dream-Phase merge of slow (+ medium) levels save memory.
+# Not in the default runs; compare against nested_a with everything else fixed.
+name: nested_heads
+rule: periodic
+lr: 0.5   # not tuned in Stage 1; uses nested_a's value
+nesting: {depth: 3, periods: [1, 4, 16], ordering: slow_deep, level_blocks: [[0, 1, 2, 3], [4], [5]]}
+rule_kwargs: {accumulate: mean}

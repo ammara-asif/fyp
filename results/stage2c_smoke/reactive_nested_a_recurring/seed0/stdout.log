@@ -1,0 +1,12 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger reactive --arm nested_a --stream recurring --seed 0 --out /home/appadmin/FYP2/results/stage2c_smoke/reactive_nested_a_recurring/seed0 --fake-data --epochs 2 --n-tasks 6
+reactive_nested_a_recurring_d0.1 seed=0 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  20.00 oracle  20.00  task-IL  20.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  4s
+  task  1  learners  1  acc soft  10.00 oracle  10.00  task-IL  20.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  0s
+  task  2  learners  1  acc soft   7.33 oracle   7.33  task-IL  17.33  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  0s
+  task  3  learners  1  acc soft   6.67 oracle   6.67  task-IL  21.67  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  0s
+  task  4  learners  1  acc soft   7.33 oracle   7.33  task-IL  24.33  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  0s
+  task  5  learners  1  acc soft   8.00 oracle   8.00  task-IL  24.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  0s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc soft 8.00  oracle 8.00  task-IL 24.00 (forgetting 2.00, new-task 20.67)  routing soft 100.00  learners 1  splits 0 + 0 on arrival  (0.2 min) -> /home/appadmin/FYP2/results/stage2c_smoke/reactive_nested_a_recurring/seed0/summary.json

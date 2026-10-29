@@ -1,5 +1,6 @@
-# nested_a.yaml — periodic stepping
+# nested_a.yaml — periodic stepping. The primary treatment arm.
 name: nested_a
 rule: periodic
+lr: 0.5   # Stage 1 validation-tuned (flat 0.1, averaging control 0.3)
 nesting: {depth: 3, periods: [1, 4, 16], ordering: slow_deep}
 rule_kwargs: {accumulate: mean}

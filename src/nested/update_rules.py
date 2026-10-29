@@ -9,19 +9,39 @@ from src.nested.learner import NestedLearner
 
 
 class UpdateRule:
-    """Base: one SGD over everything. Subclasses change only the update mechanics."""
+    """Base: one SGD over everything. Subclasses change only the update mechanics.
 
-    def __init__(self, learner: NestedLearner, lr, momentum=0.0, weight_decay=0.0, **_):
+    `grad_clip` is applied to the parameters actually being updated, immediately
+    before each optimizer step, so every arm gets the same protection against
+    the divergence seen in the Stage 0 EWC runs. It is not applied per backward
+    pass, because under periodic stepping that would repeatedly shrink a
+    gradient still being accumulated.
+    """
+
+    def __init__(self, learner: NestedLearner, lr, momentum=0.0, weight_decay=0.0,
+                 grad_clip=1.0, **_):
         self.learner = learner
         self.lr, self.momentum, self.wd = lr, momentum, weight_decay
+        self.grad_clip = grad_clip
         self.optimizers: List[torch.optim.Optimizer] = [self._sgd(learner.parameters())]
+        # Handed to Avalanche so `strategy.optimizer` covers every parameter.
+        # The rule owns the real stepping; this exists so plugins that inspect
+        # the optimizer see the whole model rather than one level.
+        self._dummy = self._sgd(learner.parameters())
 
     def _sgd(self, params, lr=None):
-        return SGD(params, lr=lr if lr is not None else self.lr, momentum=self.momentum, weight_decay=self.wd)
+        return SGD(params, lr=lr if lr is not None else self.lr,
+                   momentum=self.momentum, weight_decay=self.wd)
+
+    def _clip(self, params):
+        if self.grad_clip and self.grad_clip > 0:
+            ps = [p for p in params if p.grad is not None]
+            if ps:
+                torch.nn.utils.clip_grad_norm_(ps, self.grad_clip)
 
     @property
     def primary_optimizer(self):
-        return self.optimizers[0]
+        return self._dummy
 
     def reset(self):
         """New experience: clear optimizer state (momentum) and pending grads."""
@@ -40,6 +60,7 @@ class UpdateRule:
         loss.backward()
 
     def step(self):
+        self._clip(list(self.learner.parameters()))
         for o in self.optimizers:
             o.step()
 
@@ -70,10 +91,12 @@ class PeriodicStepping(UpdateRule):
         for lvl, opt in zip(self.learner.levels, self.optimizers):
             if self.t % lvl.period != 0:
                 continue
+            params = list(lvl.parameters())
             if self.accumulate == "mean" and lvl.period > 1:
-                for p in lvl.parameters():
+                for p in params:
                     if p.grad is not None:
                         p.grad.div_(lvl.period)
+            self._clip(params)
             opt.step()
             opt.zero_grad(set_to_none=True)
 
@@ -87,6 +110,44 @@ class PerLevelLR(UpdateRule):
         super().__init__(learner, lr, **kw)
         groups = [{"params": list(l.parameters()), "lr": lr * l.lr_ratio} for l in learner.levels]
         self.optimizers = [SGD(groups, lr=lr, momentum=self.momentum, weight_decay=self.wd)]
+
+
+# -------------------------------------------------------------------------- A'
+class GradAccumFlat(UpdateRule):
+    """Flat network with a uniform accumulation period over ALL parameters.
+
+    The matched-effective-batch control for arm A: periodic stepping at period k
+    with mean accumulation is approximately a k-times larger batch at the same
+    learning rate, so this arm asks whether nesting beats simply using a bigger
+    batch, with no per-level structure at all.
+    """
+
+    def __init__(self, learner, lr, accum_steps=16, accumulate="mean", **kw):
+        super().__init__(learner, lr, **kw)
+        self.k = int(accum_steps)
+        self.accumulate = accumulate
+        self.t = 0
+
+    def reset(self):
+        super().reset()
+        self.t = 0
+
+    def zero_grad(self):
+        pass
+
+    def step(self):
+        self.t += 1
+        if self.t % self.k != 0:
+            return
+        params = list(self.learner.parameters())
+        if self.accumulate == "mean" and self.k > 1:
+            for p in params:
+                if p.grad is not None:
+                    p.grad.div_(self.k)
+        self._clip(params)
+        for o in self.optimizers:
+            o.step()
+            o.zero_grad(set_to_none=True)
 
 
 # -------------------------------------------------------------------------- C
@@ -131,9 +192,9 @@ class EMACoupling(UpdateRule):
 # -------------------------------------------------------------------------- D
 class NestedObjectives(PeriodicStepping):
     """Level i+1 (slower) optimises over the gradient stream of level i (faster):
-        g_{i+1} = d/dθ_{i+1} [ L + λ ||∇_{θ_i} L||^1^ ]
+        g_{i+1} = d/dtheta_{i+1} [ L + lambda ||grad_{theta_i} L||^2 ]
     i.e. the slow level also minimises the *surprise* of the level below it (second-order,
-    via double backward). The fastest level sees only ∇L. Stepping is periodic as in A.
+    via double backward). The fastest level sees only grad L. Stepping is periodic as in A.
     This is one concrete reading of 'nested objectives'; MoNet's DMSM is the other."""
 
     def __init__(self, learner, lr, surprise_weight=0.1, accumulate="mean", **kw):
@@ -148,15 +209,17 @@ class NestedObjectives(PeriodicStepping):
 
         grads, i = [], 0
         for ps in per_level:
-            grads.append(list(g_all[i : i + len(ps)]))
+            grads.append(list(g_all[i: i + len(ps)]))
             i += len(ps)
 
         for li, (lvl, ps) in enumerate(zip(levels, per_level)):
             extra = [None] * len(ps)
             if li > 0:
                 faster = [g for g in grads[li - 1] if g is not None]
-                surprise = sum(g.pow(2).sum() for g in faster)
-                extra = torch.autograd.grad(surprise, ps, retain_graph=True, allow_unused=True)
+                if faster:
+                    surprise = sum(g.pow(2).sum() for g in faster)
+                    extra = torch.autograd.grad(surprise, ps, retain_graph=True,
+                                                allow_unused=True)
             for p, g_own, g_ex in zip(ps, grads[li], extra):
                 tot = None if g_own is None else g_own.detach()
                 if g_ex is not None:
@@ -175,8 +238,10 @@ RULES = {
     "per_level_lr": PerLevelLR,
     "ema": EMACoupling,
     "nested_objectives": NestedObjectives,
+    "grad_accum_flat": GradAccumFlat,
 }
 
 
-def build_rule(name, learner, lr, momentum, weight_decay, **kwargs):
-    return RULES[name](learner, lr=lr, momentum=momentum, weight_decay=weight_decay, **kwargs)
+def build_rule(name, learner, lr, momentum, weight_decay, grad_clip=1.0, **kwargs):
+    return RULES[name](learner, lr=lr, momentum=momentum, weight_decay=weight_decay,
+                       grad_clip=grad_clip, **kwargs)

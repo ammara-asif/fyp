@@ -1,0 +1,13 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode frozen --arm nested_a --stream recurring --seed 0 --out /home/appadmin/FYP2/results/stage2_smoke/frozen_nested_a_recurring/seed0 --fake-data --epochs 2 --n-tasks 6
+frozen_nested_a_recurring seed=0 device=cuda lr=0.1 window=5 min_iters=10 cap=30
+  task  0  modules  0  acc  20.00  route(test) 100.00  route(train) 100.00  abstain 100.0%  5s
+    spawn #1 at task 1: classes [0, 1, 2, 3, 4] (plateau, after 10 main iters)
+  task  1  modules  1  acc  18.00  route(test)  98.00  route(train)  95.67  abstain  95.7%  1s
+    spawn #2 at task 2: classes [6, 7, 8, 9] (plateau, after 10 main iters)
+  task  2  modules  2  acc  14.67  route(test)  79.67  route(train)  82.00  abstain  82.0%  1s
+  task  3  modules  2  acc  15.33  route(test)  79.33  route(train)  73.33  abstain  23.3%  0s
+  task  4  modules  2  acc  14.33  route(test)  82.67  route(train)  68.67  abstain  45.3%  1s
+    spawn #3 at task 5: classes [5, 13, 14] (plateau, after 14 main iters)
+  task  5  modules  3  acc  16.00  route(test)  74.00  route(train)  63.00  abstain  49.7%  1s
+
+final acc 16.00  avg-inc 16.39  forgetting 6.67  modules 3  (0.2 min)  -> /home/appadmin/FYP2/results/stage2_smoke/frozen_nested_a_recurring/seed0/summary.json

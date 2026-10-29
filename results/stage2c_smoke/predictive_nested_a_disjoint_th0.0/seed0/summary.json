@@ -1,0 +1,562 @@
+{
+  "run": "predictive_nested_a_disjoint_th0.0",
+  "stage": "2c",
+  "trigger": "predictive",
+  "arm": "nested_a",
+  "stream": "disjoint",
+  "seed": 0,
+  "theta": 0.0,
+  "delta": 0.1,
+  "epochs": 2,
+  "lr": 0.5,
+  "final_avg_acc": 6.166666666666667,
+  "avg_incremental_acc": 9.805555555555555,
+  "forgetting": 25.0,
+  "new_task_acc": 27.0,
+  "cap_hit_at_task": null,
+  "n_modules": 2,
+  "n_tasks": 6,
+  "n_splits": 0,
+  "n_spawn_on_arrival": 1,
+  "n_absorbs": 10,
+  "params": 2218802,
+  "anchor_kb": 2250.0,
+  "conflict_pct": {
+    "10": 0.08366102689788454,
+    "25": 0.08366102689788454,
+    "50": 0.08366102689788454,
+    "75": 0.08366102689788454,
+    "90": 0.08366102689788454
+  },
+  "groups": [
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    [
+      29
+    ]
+  ],
+  "split_log": [
+    {
+      "task": 5,
+      "kind": "spawn-on-arrival",
+      "parent": 1,
+      "child": 2,
+      "classes": [
+        29
+      ],
+      "step": 100
+    }
+  ],
+  "per_task": [
+    {
+      "task": 0,
+      "group": 0,
+      "n_modules": 1,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109401,
+      "anchor_kb": 375.0,
+      "secs": 4.247532606124878,
+      "acc_soft": 20.0,
+      "route_soft": 100.0,
+      "acc_soft_oc": 20.0,
+      "route_soft_oc": 100.0,
+      "acc_own": 20.0,
+      "route_own": 100.0,
+      "acc_consensus": 20.0,
+      "route_consensus": 100.0,
+      "acc_shared": 20.0,
+      "route_shared": 100.0,
+      "acc_lr": 20.0,
+      "route_lr": 100.0,
+      "acc_oracle": 20.0,
+      "route_oracle": 100.0,
+      "acc_taskil": 20.0,
+      "route_taskil": 100.0,
+      "avg_acc": 20.0
+    },
+    {
+      "task": 1,
+      "group": 1,
+      "n_modules": 1,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109401,
+      "anchor_kb": 750.0,
+      "secs": 0.5914797782897949,
+      "acc_soft": 10.0,
+      "route_soft": 100.0,
+      "acc_soft_oc": 10.0,
+      "route_soft_oc": 100.0,
+      "acc_own": 10.0,
+      "route_own": 100.0,
+      "acc_consensus": 10.0,
+      "route_consensus": 100.0,
+      "acc_shared": 10.0,
+      "route_shared": 100.0,
+      "acc_lr": 10.0,
+      "route_lr": 100.0,
+      "acc_oracle": 10.0,
+      "route_oracle": 100.0,
+      "acc_taskil": 21.5,
+      "route_taskil": 100.0,
+      "avg_acc": 10.0
+    },
+    {
+      "task": 2,
+      "group": 2,
+      "n_modules": 1,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109401,
+      "anchor_kb": 1125.0,
+      "secs": 0.7424144744873047,
+      "acc_soft": 11.666666666666666,
+      "route_soft": 100.0,
+      "acc_soft_oc": 11.666666666666666,
+      "route_soft_oc": 100.0,
+      "acc_own": 11.666666666666666,
+      "route_own": 100.0,
+      "acc_consensus": 11.666666666666666,
+      "route_consensus": 100.0,
+      "acc_shared": 11.666666666666666,
+      "route_shared": 100.0,
+      "acc_lr": 11.666666666666666,
+      "route_lr": 100.0,
+      "acc_oracle": 11.666666666666666,
+      "route_oracle": 100.0,
+      "acc_taskil": 34.666666666666664,
+      "route_taskil": 100.0,
+      "avg_acc": 11.666666666666666
+    },
+    {
+      "task": 3,
+      "group": 3,
+      "n_modules": 1,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109401,
+      "anchor_kb": 1500.0,
+      "secs": 0.8007428646087646,
+      "acc_soft": 5.0,
+      "route_soft": 100.0,
+      "acc_soft_oc": 5.0,
+      "route_soft_oc": 100.0,
+      "acc_own": 5.0,
+      "route_own": 100.0,
+      "acc_consensus": 5.0,
+      "route_consensus": 100.0,
+      "acc_shared": 5.0,
+      "route_shared": 100.0,
+      "acc_lr": 5.0,
+      "route_lr": 100.0,
+      "acc_oracle": 5.0,
+      "route_oracle": 100.0,
+      "acc_taskil": 20.0,
+      "route_taskil": 100.0,
+      "avg_acc": 5.0
+    },
+    {
+      "task": 4,
+      "group": 4,
+      "n_modules": 1,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109401,
+      "anchor_kb": 1875.0,
+      "secs": 0.8504197597503662,
+      "acc_soft": 6.0,
+      "route_soft": 100.0,
+      "acc_soft_oc": 6.0,
+      "route_soft_oc": 100.0,
+      "acc_own": 6.0,
+      "route_own": 100.0,
+      "acc_consensus": 6.0,
+      "route_consensus": 100.0,
+      "acc_shared": 6.0,
+      "route_shared": 100.0,
+      "acc_lr": 6.0,
+      "route_lr": 100.0,
+      "acc_oracle": 6.0,
+      "route_oracle": 100.0,
+      "acc_taskil": 25.0,
+      "route_taskil": 100.0,
+      "avg_acc": 6.0
+    },
+    {
+      "task": 5,
+      "group": 5,
+      "n_modules": 2,
+      "splits": 1,
+      "mean_conflict": 0.08366102689788454,
+      "params": 2218802,
+      "anchor_kb": 2250.0,
+      "secs": 3.5358614921569824,
+      "acc_soft": 6.166666666666667,
+      "route_soft": 99.0,
+      "acc_soft_oc": 5.0,
+      "route_soft_oc": 96.66666666666667,
+      "acc_own": 3.6666666666666665,
+      "route_own": 96.5,
+      "acc_consensus": 4.333333333333333,
+      "route_consensus": 97.16666666666667,
+      "acc_shared": 6.333333333333333,
+      "route_shared": 98.83333333333333,
+      "acc_lr": 6.666666666666667,
+      "route_lr": 91.66666666666667,
+      "acc_oracle": 6.666666666666667,
+      "route_oracle": 100.0,
+      "acc_taskil": 21.666666666666668,
+      "route_taskil": 100.0,
+      "avg_acc": 6.166666666666667
+    }
+  ],
+  "per_group_history": {
+    "soft": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        37.0
+      ]
+    },
+    "soft_oc": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        30.0
+      ]
+    },
+    "own": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        22.0
+      ]
+    },
+    "consensus": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        26.0
+      ]
+    },
+    "shared": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        38.0
+      ]
+    },
+    "lr": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        40.0
+      ]
+    },
+    "oracle": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "2": [
+        35.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "3": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "4": [
+        30.0,
+        0.0
+      ],
+      "5": [
+        40.0
+      ]
+    },
+    "taskil": {
+      "0": [
+        20.0,
+        23.0,
+        43.0,
+        22.0,
+        27.0,
+        20.0
+      ],
+      "1": [
+        20.0,
+        26.0,
+        17.0,
+        20.0,
+        20.0
+      ],
+      "2": [
+        35.0,
+        21.0,
+        23.0,
+        21.0
+      ],
+      "3": [
+        20.0,
+        25.0,
+        28.0
+      ],
+      "4": [
+        30.0,
+        21.0
+      ],
+      "5": [
+        20.0
+      ]
+    }
+  },
+  "refresh_scope": "head",
+  "nf": 20,
+  "minutes": 0.23520205815633138,
+  "fake_data": true,
+  "val": false,
+  "final_acc_soft": 6.166666666666667,
+  "routing_soft": 99.0,
+  "forgetting_soft": 25.0,
+  "new_task_acc_soft": 27.0,
+  "final_acc_soft_oc": 5.0,
+  "routing_soft_oc": 96.66666666666667,
+  "forgetting_soft_oc": 25.0,
+  "new_task_acc_soft_oc": 25.833333333333332,
+  "final_acc_own": 3.6666666666666665,
+  "routing_own": 96.5,
+  "forgetting_own": 25.0,
+  "new_task_acc_own": 24.5,
+  "final_acc_consensus": 4.333333333333333,
+  "routing_consensus": 97.16666666666667,
+  "forgetting_consensus": 25.0,
+  "new_task_acc_consensus": 25.166666666666668,
+  "final_acc_shared": 6.333333333333333,
+  "routing_shared": 98.83333333333333,
+  "forgetting_shared": 25.0,
+  "new_task_acc_shared": 27.166666666666668,
+  "final_acc_lr": 6.666666666666667,
+  "routing_lr": 91.66666666666667,
+  "forgetting_lr": 25.0,
+  "new_task_acc_lr": 27.5,
+  "final_acc_oracle": 6.666666666666667,
+  "routing_oracle": 100.0,
+  "forgetting_oracle": 25.0,
+  "new_task_acc_oracle": 27.5,
+  "final_acc_taskil": 21.666666666666668,
+  "routing_taskil": 100.0,
+  "forgetting_taskil": 10.4,
+  "new_task_acc_taskil": 24.166666666666668
+}

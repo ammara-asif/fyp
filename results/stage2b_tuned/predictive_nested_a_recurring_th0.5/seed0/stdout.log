@@ -1,0 +1,26 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm nested_a --stream recurring --theta 0.5 --seed 0 --out /home/appadmin/FYP2/results/stage2b_tuned/predictive_nested_a_recurring_th0.5/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+predictive_nested_a_recurring_th0.5 seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  61.40 conf  61.40  route proto 100.00 conf 100.00  conflict   -    10s
+  task  1  learners  1  acc proto  40.10 conf  40.10  route proto 100.00 conf 100.00  conflict 0.022  6s
+  task  2  learners  1  acc proto  32.40 conf  32.40  route proto 100.00 conf 100.00  conflict 0.029  6s
+  task  3  learners  1  acc proto  23.15 conf  23.15  route proto 100.00 conf 100.00  conflict 0.033  6s
+  task  4  learners  1  acc proto  27.24 conf  27.24  route proto 100.00 conf 100.00  conflict 0.062  7s
+  task  5  learners  1  acc proto  19.83 conf  19.83  route proto 100.00 conf 100.00  conflict 0.039  6s
+  task  6  learners  1  acc proto  22.17 conf  22.17  route proto 100.00 conf 100.00  conflict 0.011  6s
+  task  7  learners  1  acc proto  16.62 conf  16.62  route proto 100.00 conf 100.00  conflict 0.031  7s
+  task  8  learners  1  acc proto  18.07 conf  18.07  route proto 100.00 conf 100.00  conflict 0.025  7s
+  task  9  learners  1  acc proto  16.62 conf  16.62  route proto 100.00 conf 100.00  conflict 0.008  7s
+  task 10  learners  1  acc proto  19.16 conf  19.16  route proto 100.00 conf 100.00  conflict   -    7s
+  task 11  learners  1  acc proto  17.16 conf  17.16  route proto 100.00 conf 100.00  conflict   -    6s
+  task 12  learners  1  acc proto  21.74 conf  21.74  route proto 100.00 conf 100.00  conflict   -    7s
+  task 13  learners  1  acc proto  21.30 conf  21.30  route proto 100.00 conf 100.00  conflict   -    8s
+  task 14  learners  1  acc proto  25.04 conf  25.04  route proto 100.00 conf 100.00  conflict   -    7s
+  task 15  learners  1  acc proto  24.72 conf  24.72  route proto 100.00 conf 100.00  conflict   -    7s
+  task 16  learners  1  acc proto  24.86 conf  24.86  route proto 100.00 conf 100.00  conflict   -    7s
+  task 17  learners  1  acc proto  24.82 conf  24.82  route proto 100.00 conf 100.00  conflict   -    7s
+  task 18  learners  1  acc proto  24.58 conf  24.58  route proto 100.00 conf 100.00  conflict   -    8s
+  task 19  learners  1  acc proto  27.10 conf  27.10  route proto 100.00 conf 100.00  conflict   -    7s
+
+final acc proto 27.10 conf 27.10  learners 1  splits 0  absorbs 10  conflict p50 0.003  (2.4 min) -> /home/appadmin/FYP2/results/stage2b_tuned/predictive_nested_a_recurring_th0.5/seed0/summary.json

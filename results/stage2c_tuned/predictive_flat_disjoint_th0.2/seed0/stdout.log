@@ -1,0 +1,45 @@
+# /home/appadmin/venv-fyp/bin/python3 /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm flat --stream disjoint --theta 0.2 --seed 0 --out /home/appadmin/FYP2/results/stage2c_tuned/predictive_flat_disjoint_th0.2/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+predictive_flat_disjoint_th0.2 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc soft  72.40 oracle  72.40  task-IL  72.40  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  16s
+    split: learner 1 -> child 2 takes [9]
+    split: learner 1 -> child 3 takes [5]
+  task  1  learners  3  acc soft  50.60 oracle  60.60  task-IL  41.60  route soft  86.10 own  85.2 cons  82.6 shared  85.2 lr  81.8  30s
+    split: learner 2 -> child 4 takes [12]
+  task  2  learners  4  acc soft  41.73 oracle  56.73  task-IL  35.33  route soft  79.40 own  78.1 cons  77.5 shared  77.5 lr  72.2  30s
+    split: learner 1 -> child 5 takes [15]
+    split: learner 2 -> child 6 takes [18, 19]
+  task  3  learners  6  acc soft  38.30 oracle  59.10  task-IL  30.20  route soft  65.90 own  61.6 cons  66.4 shared  62.1 lr  58.1  38s
+    split: learner 1 -> child 7 takes [24]
+  task  4  learners  7  acc soft  36.92 oracle  56.76  task-IL  27.40  route soft  66.56 own  63.1 cons  65.4 shared  63.0 lr  58.0  32s
+    split: learner 1 -> child 8 takes [25]
+  task  5  learners  8  acc soft  32.43 oracle  53.30  task-IL  27.53  route soft  66.97 own  63.1 cons  65.3 shared  62.9 lr  56.9  33s
+    split: learner 1 -> child 9 takes [34]
+  task  6  learners  9  acc soft  33.91 oracle  54.26  task-IL  25.83  route soft  66.23 own  52.9 cons  67.2 shared  64.9 lr  52.0  27s
+    split: learner 2 -> child 10 takes [35]
+    split: learner 1 -> child 11 takes [36]
+  task  7  learners 11  acc soft  28.83 oracle  53.80  task-IL  24.98  route soft  62.77 own  56.3 cons  64.0 shared  58.3 lr  48.8  42s
+    split: learner 2 -> child 12 takes [42]
+  task  8  learners 12  acc soft  27.11 oracle  51.04  task-IL  24.67  route soft  63.91 own  55.5 cons  65.4 shared  60.8 lr  46.9  31s
+    split: learner 3 -> child 13 takes [48]
+    split: learner 1 -> child 14 takes [46]
+  task  9  learners 14  acc soft  28.72 oracle  54.52  task-IL  27.60  route soft  61.64 own  48.0 cons  62.9 shared  58.9 lr  45.4  46s
+    split: learner 3 -> child 15 takes [52]
+    split: learner 3 -> child 16 takes [50]
+  task 10  learners 16  acc soft  27.78 oracle  54.16  task-IL  26.04  route soft  62.60 own  51.8 cons  62.1 shared  57.8 lr  42.3  42s
+    split: learner 1 -> child 17 takes [55]
+  task 11  learners 17  acc soft  24.70 oracle  49.58  task-IL  25.40  route soft  62.57 own  48.8 cons  63.4 shared  59.3 lr  41.2  35s
+    split: learner 2 -> child 18 takes [63]
+  task 12  learners 18  acc soft  25.09 oracle  49.82  task-IL  25.02  route soft  62.55 own  49.9 cons  64.4 shared  59.4 lr  39.8  38s
+    split: learner 7 -> child 19 takes [68]
+  task 13  learners 19  acc soft  24.24 oracle  48.94  task-IL  24.10  route soft  64.84 own  55.4 cons  65.4 shared  60.3 lr  40.2  40s
+    split: learner 1 -> child 20 takes [74]
+  task 14  learners 20  acc soft  21.57 oracle  45.80  task-IL  23.91  route soft  66.43 own  59.9 cons  66.5 shared  61.5 lr  38.8  41s
+  task 15  learners 20  acc soft  22.49 oracle  45.58  task-IL  25.80  route soft  67.10 own  55.7 cons  67.1 shared  63.3 lr  39.0  43s
+  task 16  learners 20  acc soft  21.55 oracle  42.67  task-IL  28.65  route soft  68.20 own  53.3 cons  69.1 shared  66.0 lr  38.4  32s
+  task 17  learners 20  acc soft  21.31 oracle  42.17  task-IL  31.34  route soft  70.26 own  59.5 cons  70.8 shared  67.4 lr  39.8  35s
+  task 18  learners 20  acc soft  18.91 oracle  38.59  task-IL  32.02  route soft  70.65 own  59.1 cons  71.2 shared  68.0 lr  39.6  44s
+  task 19  learners 20  acc soft  21.90 oracle  42.31  task-IL  34.59  route soft  67.86 own  50.5 cons  69.6 shared  65.7 lr  37.6  45s
+
+final acc soft 21.90  oracle 42.31  task-IL 34.59 (forgetting 1.94, new-task 31.95)  routing soft 67.86  learners 20  splits 19 + 0 on arrival  (12.1 min) -> /home/appadmin/FYP2/results/stage2c_tuned/predictive_flat_disjoint_th0.2/seed0/summary.json

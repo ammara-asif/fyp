@@ -1,0 +1,19 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm flat --stream disjoint --theta 0.5 --val --out /home/appadmin/FYP2/results/stage2c_tuning/predictive_flat/v0.5 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train; test set untouched
+predictive_flat_disjoint_th0.5 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc soft  61.60 oracle  61.60  task-IL  61.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  17s
+  task  1  learners  1  acc soft  50.60 oracle  50.60  task-IL  67.20  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  13s
+    split: learner 1 -> child 2 takes [14]
+  task  2  learners  2  acc soft  39.07 oracle  44.40  task-IL  47.60  route soft  92.13 own  89.9 cons  91.1 shared  92.4 lr  88.9  21s
+  task  3  learners  2  acc soft  32.50 oracle  37.70  task-IL  52.00  route soft  89.20 own  88.2 cons  88.9 shared  89.7 lr  83.1  22s
+  task  4  learners  2  acc soft  37.20 oracle  41.20  task-IL  61.28  route soft  91.12 own  89.0 cons  90.1 shared  91.4 lr  82.6  16s
+  task  5  learners  2  acc soft  26.00 oracle  30.07  task-IL  56.53  route soft  88.33 own  87.1 cons  87.2 shared  89.5 lr  75.6  22s
+    split: learner 1 -> child 3 takes [34]
+  task  6  learners  3  acc soft  30.11 oracle  36.63  task-IL  55.03  route soft  82.34 own  76.2 cons  84.6 shared  83.5 lr  67.8  27s
+  task  7  learners  3  acc soft  25.25 oracle  32.20  task-IL  57.25  route soft  84.45 own  79.5 cons  85.3 shared  86.2 lr  69.6  17s
+  task  8  learners  3  acc soft  26.00 oracle  32.36  task-IL  60.40  route soft  84.80 own  79.7 cons  85.4 shared  84.9 lr  69.2  23s
+  task  9  learners  3  acc soft  24.60 oracle  30.40  task-IL  59.72  route soft  85.56 own  82.8 cons  87.4 shared  86.6 lr  69.2  17s
+
+final acc soft 24.60  oracle 30.40  task-IL 59.72 (forgetting 4.80, new-task 52.72)  routing soft 85.56  learners 3  splits 2 + 0 on arrival  (3.4 min) -> /home/appadmin/FYP2/results/stage2c_tuning/predictive_flat/v0.5/summary.json

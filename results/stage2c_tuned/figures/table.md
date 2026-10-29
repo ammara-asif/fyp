@@ -1,0 +1,32 @@
+
+### Disjoint stream (20 tasks, class-IL)
+
+| Method | n | Final acc (%) | New-task acc (%) | Forgetting (pts) | Task-IL acc (%) | Task-IL new-task (%) | Task-IL forgetting (pts) | Oracle acc (%) | Forgetting inside learners (pts) | Avg incr. acc (%) | Learners | Cap hit at task | Routing, all signals (%) | 'Mine' only | Referrals only | Shared space only | Likelihood ratio only | Params (M) | Raw memory (KB) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Predictive split (ours) [avg_control, θ=0.5] | 3 | 21.43 ± 1.95 | 66.12 ± 2.95 | 47.04 ± 2.95 | 63.11 ± 3.95 | 55.86 ± 6.13 | 5.43 ± 1.53 | 30.06 ± 2.69 | 49.98 ± 1.75 | 27.71 ± 1.07 | 5.00 ± 1.00 | — | 81.86 ± 4.35 | 72.79 ± 9.78 | 82.48 ± 3.59 | 80.21 ± 5.16 | 55.26 ± 6.16 | 5.55 ± 1.11 | 7500.00 ± 0.00 |
+| Predictive split (ours) [flat, θ=0.05] | 1 | 20.82 | — | 25.76 | — | — | — | 46.76 | 38.08 | 31.76 | 20.00 | — | 45.93 | 39.45 | 44.87 | 43.12 | 21.96 | 22.19 | 7500.00 |
+| Predictive split (ours) [flat, θ=0.2] | 3 | 22.56 ± 0.58 | 51.94 ± 4.53 | 31.09 ± 5.07 | 40.44 ± 6.86 | 38.92 ± 7.27 | 3.21 ± 1.42 | 45.05 ± 3.02 | 39.99 ± 0.85 | 32.36 ± 1.46 | 20.00 ± 0.00 | 12.67 ± 5.13 | 59.57 ± 8.50 | 43.57 ± 8.72 | 59.46 ± 10.10 | 57.03 ± 8.77 | 34.63 ± 4.94 | 22.19 ± 0.00 | 7500.00 ± 0.00 |
+| Predictive split (ours) [nested_2level, θ=0.05] | 1 | 21.28 | — | 17.52 | — | — | — | 51.95 | 35.99 | 31.03 | 20.00 | — | 37.38 | 29.59 | 34.29 | 31.75 | 22.59 | 22.19 | 7500.00 |
+| Predictive split (ours) [nested_2level, θ=0.5] | 3 | 22.60 ± 1.04 | 65.36 ± 2.06 | 45.00 ± 1.46 | 62.75 ± 3.60 | 56.53 ± 6.74 | 5.51 ± 2.53 | 29.70 ± 1.10 | 48.43 ± 1.59 | 30.66 ± 0.57 | 5.00 ± 1.73 | — | 84.02 ± 2.01 | 75.27 ± 3.02 | 85.21 ± 2.33 | 82.93 ± 2.17 | 57.32 ± 0.71 | 5.55 ± 1.92 | 7500.00 ± 0.00 |
+| Predictive split (ours) [θ=0.05] | 1 | 21.27 | — | 20.27 | — | — | — | 49.25 | 37.63 | 29.97 | 20.00 | — | 42.51 | 32.54 | 39.82 | 37.22 | 26.39 | 22.19 | 7500.00 |
+| Predictive split (ours) [θ=0.5] | 6 | 22.96 ± 1.27 | 64.13 ± 5.01 | 43.34 ± 4.15 | 55.72 ± 12.38 | 53.90 ± 9.95 | 4.66 ± 1.59 | 32.29 ± 3.67 | 46.09 ± 3.52 | 31.11 ± 0.66 | 8.67 ± 6.12 | — | 81.73 ± 7.13 | 44.14 ± 39.76 | 45.61 ± 42.17 | 82.97 ± 6.79 | 43.71 ± 23.12 | 9.61 ± 6.79 | 7500.00 ± 0.00 |
+| Predictive split (ours) [nested_heads, θ=0.05] | 3 | 18.20 ± 0.53 | 32.53 ± 1.89 | 15.74 ± 1.44 | 50.43 ± 1.97 | 44.48 ± 4.21 | 4.38 ± 1.11 | 51.38 ± 2.04 | 35.31 ± 2.52 | 27.23 ± 0.78 | 20.00 ± 0.00 | 5.00 ± 0.00 | 32.58 ± 4.55 | 21.39 ± 3.86 | 32.06 ± 4.59 | 29.32 ± 4.73 | 19.99 ± 0.97 | 22.19 ± 0.00 | 7500.00 ± 0.00 |
+| Reactive split (DEN-style) [δ=0.05] | 3 | 21.98 ± 0.40 | 41.56 ± 1.35 | 21.15 ± 1.93 | 49.61 ± 2.70 | 46.10 ± 3.14 | 3.53 ± 0.59 | 52.35 ± 3.23 | 34.00 ± 2.20 | 32.49 ± 0.65 | 20.00 ± 0.00 | 7.33 ± 0.58 | 43.13 ± 3.78 | 33.72 ± 1.35 | 42.29 ± 5.54 | 37.38 ± 4.21 | 26.43 ± 2.08 | 22.19 ± 0.00 | 7500.00 ± 0.00 |
+| Reactive split (DEN-style) [δ=0.3] | 1 | 20.65 | — | 26.64 | — | — | — | 48.34 | 35.41 | 30.92 | 20.00 | — | 52.94 | 40.26 | 52.05 | 48.37 | 30.39 | 22.19 | 7500.00 |
+| No splitting | 6 | 24.58 ± 1.85 | 74.15 ± 1.48 | 52.17 ± 1.53 | 76.95 ± 1.66 | 80.62 ± 0.98 | 5.18 ± 0.52 | 24.58 ± 1.85 | 52.17 ± 1.53 | 32.74 ± 1.57 | 1.00 ± 0.00 | — | 100.00 ± 0.00 | 100.00 ± 0.00 | 100.00 ± 0.00 | 100.00 ± 0.00 | 100.00 ± 0.00 | 11.63 ± 11.53 | 7500.00 ± 0.00 |
+
+### Recurring stream (20 tasks, class-IL)
+
+| Method | n | Final acc (%) | New-task acc (%) | Forgetting (pts) | Task-IL acc (%) | Task-IL new-task (%) | Task-IL forgetting (pts) | Oracle acc (%) | Forgetting inside learners (pts) | Avg incr. acc (%) | Learners | Cap hit at task | Routing, all signals (%) | 'Mine' only | Referrals only | Shared space only | Likelihood ratio only | Params (M) | Raw memory (KB) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Predictive split (ours) [θ=0.05] | 1 | 28.72 | — | 6.18 | — | — | — | 75.16 | 12.66 | 30.02 | 20.00 | — | 34.38 | 31.60 | 29.92 | 25.60 | 31.22 | 22.19 | 3750.00 |
+| Predictive split (ours) [θ=0.5] | 3 | 32.21 ± 1.83 | 36.18 ± 0.89 | 12.55 ± 0.97 | 64.67 ± 3.46 | 47.25 ± 3.13 | 6.11 ± 1.81 | 38.22 ± 1.11 | 14.93 ± 2.14 | 31.53 ± 0.10 | 2.33 ± 0.58 | — | 85.44 ± 8.03 | 82.31 ± 8.93 | 85.83 ± 7.77 | 85.16 ± 9.07 | 67.49 ± 6.98 | 2.59 ± 0.64 | 3750.00 ± 0.00 |
+| Reactive split (DEN-style) [δ=0.05] | 3 | 27.83 ± 1.10 | 28.78 ± 0.96 | 8.54 ± 0.95 | 42.79 ± 0.81 | 35.27 ± 2.82 | 2.70 ± 0.76 | 75.43 ± 1.29 | 6.60 ± 0.94 | 30.92 ± 0.68 | 20.00 ± 0.00 | 7.33 ± 0.58 | 33.13 ± 0.12 | 28.52 ± 1.86 | 32.09 ± 1.08 | 27.71 ± 1.39 | 28.19 ± 1.97 | 22.19 ± 0.00 | 3750.00 ± 0.00 |
+| Reactive split (DEN-style) [δ=0.3] | 1 | 29.76 | — | 7.42 | — | — | — | 59.90 | 12.34 | 31.73 | 9.00 | — | 42.62 | 38.90 | 41.68 | 37.64 | 40.22 | 9.98 | 3750.00 |
+| No splitting | 3 | 32.54 ± 1.42 | 38.11 ± 1.49 | 13.31 ± 2.28 | 73.65 ± 1.59 | 64.73 ± 0.42 | 4.83 ± 1.44 | 32.54 ± 1.42 | 13.31 ± 2.28 | 31.98 ± 0.49 | 1.00 ± 0.00 | — | 100.00 ± 0.00 | 100.00 ± 0.00 | 100.00 ± 0.00 | 100.00 ± 0.00 | 100.00 ± 0.00 | 1.11 ± 0.00 | 3750.00 ± 0.00 |
+
+**Class-IL (the real setting):** 'Final acc' uses the soft router, which multiplies four label-free signals ('mine', referrals, a shared-space model in the root's slow levels, and a likelihood ratio), then P(class) = Σ_learner P(learner) × P(class | learner). 'New-task acc' = accuracy on each task right after it was learned (plasticity). Forgetting = mean over tasks of (best accuracy ever − final accuracy); it can only be read together with new-task acc, because a system that learns less also forgets less.
+
+**Task-IL (same quiz for every system):** the task's 5 classes are given, each class is scored by its owner. This removes both routing and the single learner's bias towards recent classes, so 'Task-IL forgetting' is the fair measure of how much knowledge survives inside the system, and the column to compare splitting against no splitting.
+
+**Oracle** sends every image to its true owner, which answers among its own classes: the ceiling routing is chasing. 'Forgetting inside learners' is oracle forgetting: how much the owner itself lost. Not comparable with the single learner (5-way vs 100-way). Routing = how often the most likely learner is the true owner; the single-signal columns show each signal alone.

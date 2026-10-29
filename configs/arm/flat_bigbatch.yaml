@@ -1,0 +1,9 @@
+# flat_bigbatch.yaml — matched-effective-batch control.
+# Periodic stepping at k=16 with mean accumulation is approximately a 16x larger
+# batch at the same lr. This arm applies that uniformly, with no per-level
+# structure, so a win for nested_a cannot be explained as "bigger batch".
+name: flat_bigbatch
+rule: grad_accum_flat
+lr: 0.1
+nesting: {depth: 1, periods: [1], ordering: slow_deep}
+rule_kwargs: {accum_steps: 16, accumulate: mean}

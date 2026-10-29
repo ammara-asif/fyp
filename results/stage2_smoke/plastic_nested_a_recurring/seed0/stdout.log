@@ -1,0 +1,13 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode plastic --arm nested_a --stream recurring --seed 0 --out /home/appadmin/FYP2/results/stage2_smoke/plastic_nested_a_recurring/seed0 --fake-data --epochs 2 --n-tasks 6
+plastic_nested_a_recurring seed=0 device=cuda lr=0.1 window=5 min_iters=10 cap=30
+  task  0  modules  0  acc  20.00  route(test) 100.00  route(train) 100.00  abstain 100.0%  5s
+    spawn #1 at task 1: classes [0, 1, 2, 3, 4] (plateau, after 10 main iters)
+  task  1  modules  1  acc  16.50  route(test)  98.00  route(train)  84.00  abstain  99.3%  2s
+    spawn #2 at task 2: classes [6, 7, 8, 9] (plateau, after 10 main iters)
+  task  2  modules  2  acc  17.00  route(test)  84.33  route(train)  39.67  abstain  96.0%  3s
+    spawn #3 at task 3: classes [10] (plateau, after 10 main iters)
+  task  3  modules  3  acc  17.00  route(test)  83.67  route(train)  14.33  abstain  84.0%  4s
+  task  4  modules  3  acc  15.33  route(test)  89.33  route(train)  15.00  abstain  83.7%  4s
+  task  5  modules  3  acc  15.67  route(test)  82.33  route(train)  11.67  abstain  86.3%  3s
+
+final acc 15.67  avg-inc 16.92  forgetting 2.33  modules 3  (0.4 min)  -> /home/appadmin/FYP2/results/stage2_smoke/plastic_nested_a_recurring/seed0/summary.json

@@ -1,0 +1,11 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm flat --stream disjoint --theta 0.1 --seed 0 --out /home/appadmin/FYP2/results/stage2c_smoke/predictive_flat_disjoint_th0.1/seed0 --fake-data --epochs 2 --n-tasks 6
+predictive_flat_disjoint_th0.1 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc soft  16.00 oracle  16.00  task-IL  16.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  5s
+  task  1  learners  1  acc soft   8.50 oracle   8.50  task-IL  21.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  2  learners  1  acc soft  12.67 oracle  12.67  task-IL  29.67  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  3  learners  1  acc soft   3.75 oracle   3.75  task-IL  18.75  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  4  learners  1  acc soft   4.00 oracle   4.00  task-IL  20.40  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+    split: learner 1 -> child 2 takes [7, 8, 9, 10, 13, 16, 19, 21, 22, 24]
+  task  5  learners  2  acc soft   7.83 oracle   8.33  task-IL  20.50  route soft  91.33 own  49.3 cons  66.7 shared  91.7 lr  72.3  2s
+
+final acc soft 7.83  oracle 8.33  task-IL 20.50 (forgetting 5.40, new-task 21.17)  routing soft 91.33  learners 2  splits 1 + 0 on arrival  (0.2 min) -> /home/appadmin/FYP2/results/stage2c_smoke/predictive_flat_disjoint_th0.1/seed0/summary.json

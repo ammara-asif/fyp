@@ -1,5 +1,6 @@
-# nested_a_wide.yaml — frequency ratio sweep (§7.4)
+# nested_a_wide.yaml — frequency ratio sweep
 name: nested_a_wide
 rule: periodic
+lr: 0.1
 nesting: {depth: 3, periods: [1, 16, 256], ordering: slow_deep}
 rule_kwargs: {accumulate: mean}

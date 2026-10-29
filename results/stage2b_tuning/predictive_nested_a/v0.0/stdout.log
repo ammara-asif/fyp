@@ -1,0 +1,36 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm nested_a --stream disjoint --theta 0.0 --val --out /home/appadmin/FYP2/results/stage2b_tuning/predictive_nested_a/v0.0 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train held out; test set untouched
+predictive_nested_a_disjoint_th0.0 seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  68.80 conf  68.80  route proto 100.00 conf 100.00  conflict   -    14s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9] (signal 0.000)
+  task  1  learners  2  acc proto  46.00 conf  47.60  route proto  63.20 conf  64.60  conflict 0.014  10s
+    split: learner 2 -> child 3 takes [10, 11, 12, 14] (signal 0.008)
+    split: learner 1 -> child 4 takes [13] (signal 0.021)
+  task  2  learners  4  acc proto  33.73 conf   6.67  route proto  43.73 conf   6.67  conflict 0.016  16s
+    split: learner 2 -> child 5 takes [16, 17, 18] (signal 0.107)
+    split: learner 1 -> child 6 takes [15, 19] (signal 0.000)
+  task  3  learners  6  acc proto  28.10 conf   5.00  route proto  32.10 conf   5.00  conflict 0.052  15s
+    split: learner 3 -> child 7 takes [23] (signal 0.000)
+    split: learner 6 -> child 8 takes [21] (signal 0.015)
+    split: learner 1 -> child 9 takes [20, 24] (signal 0.000)
+    split: learner 2 -> child 10 takes [22] (signal 0.063)
+  task  4  learners 10  acc proto  21.20 conf   4.00  route proto  24.00 conf   4.00  conflict 0.032  24s
+    split: learner 7 -> child 11 takes [25, 28] (signal 0.003)
+    split: learner 5 -> child 12 takes [27] (signal 0.011)
+    split: learner 3 -> child 13 takes [26] (signal 0.055)
+    split: learner 6 -> child 14 takes [29] (signal 0.021)
+  task  5  learners 14  acc proto  17.27 conf   3.33  route proto  19.07 conf   3.33  conflict 0.019  25s
+    split: learner 13 -> child 15 takes [32, 34] (signal 0.048)
+    split: learner 1 -> child 16 takes [31, 33] (signal 0.180)
+    split: learner 7 -> child 17 takes [30] (signal 0.046)
+  task  6  learners 17  acc proto  15.49 conf   2.86  route proto  16.74 conf   2.86  conflict 0.052  20s
+    split: learner 14 -> child 18 takes [35, 36, 37, 39] (signal 0.011)
+    split: learner 10 -> child 19 takes [38] (signal 0.011)
+  task  7  learners 19  acc proto  13.65 conf   2.50  route proto  14.90 conf   2.50  conflict 0.030  17s
+    split: learner 18 -> child 20 takes [44] (signal 0.000)
+  task  8  learners 20  acc proto  13.24 conf   2.22  route proto  14.80 conf   2.22  conflict 0.031  26s
+  task  9  learners 20  acc proto  12.56 conf   2.00  route proto  14.00 conf   2.00  conflict 0.036  25s
+
+final acc proto 12.56 conf 2.00  learners 20  splits 19  absorbs 8  conflict p50 0.013  (3.3 min) -> /home/appadmin/FYP2/results/stage2b_tuning/predictive_nested_a/v0.0/summary.json

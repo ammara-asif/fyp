@@ -1,5 +1,6 @@
-# nested_c.yaml — EMA coupling
+# nested_c.yaml — EMA coupling (CLS-ER generalised to per-level rates)
 name: nested_c
 rule: ema
+lr: 0.1
 nesting: {depth: 3, periods: [1, 4, 16], ema_taus: [0.0, 0.75, 0.9375], ordering: slow_deep}
 rule_kwargs: {consistency_weight: 0.1}

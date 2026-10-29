@@ -1,0 +1,13 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode frozen --arm nested_a --stream disjoint --seed 0 --out /home/appadmin/FYP2/results/stage2_smoke/frozen_nested_a_disjoint/seed0 --fake-data --epochs 2 --n-tasks 6
+frozen_nested_a_disjoint seed=0 device=cuda lr=0.1 window=10 min_iters=20 cap=60
+  task  0  modules  0  acc  18.00  route(test) 100.00  route(train) 100.00  abstain 100.0%  6s
+    spawn #1 at task 1: classes [0, 1, 2, 3, 4] (plateau, after 20 main iters)
+  task  1  modules  1  acc  17.50  route(test)  84.50  route(train)  89.00  abstain  89.0%  1s
+    spawn #2 at task 2: classes [5, 6, 7, 8, 9] (plateau, after 20 main iters)
+  task  2  modules  2  acc  15.00  route(test)  72.33  route(train)  55.50  abstain  55.5%  1s
+  task  3  modules  2  acc  11.25  route(test)  66.25  route(train)  50.33  abstain  50.3%  1s
+    spawn #3 at task 4: classes [15, 16, 17, 18, 19] (plateau, after 20 main iters)
+  task  4  modules  3  acc  11.20  route(test)  48.40  route(train)  45.67  abstain  45.7%  1s
+  task  5  modules  3  acc   7.17  route(test)  48.00  route(train)  37.00  abstain  37.0%  1s
+
+final acc 7.17  avg-inc 13.35  forgetting 10.20  modules 3  (0.2 min)  -> /home/appadmin/FYP2/results/stage2_smoke/frozen_nested_a_disjoint/seed0/summary.json

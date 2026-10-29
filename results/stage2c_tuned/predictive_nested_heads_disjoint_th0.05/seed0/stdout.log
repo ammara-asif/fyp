@@ -1,0 +1,45 @@
+# /home/appadmin/venv-fyp/bin/python3 /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm nested_heads --stream disjoint --theta 0.05 --seed 0 --out /home/appadmin/FYP2/results/stage2c_tuned/predictive_nested_heads_disjoint_th0.05/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+predictive_nested_heads_disjoint_th0.05 seed=0 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  68.40 oracle  68.40  task-IL  68.40  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  19s
+    new learner 2 (from 1) for classes [5, 6, 7, 8]: conflicts with every learner
+    split: learner 1 -> child 3 takes [9]
+  task  1  learners  3  acc soft  47.70 oracle  66.80  task-IL  42.30  route soft  65.70 own  54.9 cons  65.2 shared  59.8 lr  61.8  25s
+    split: learner 3 -> child 4 takes [10]
+    split: learner 2 -> child 5 takes [13, 14]
+    split: learner 2 -> child 6 takes [11]
+    split: learner 2 -> child 7 takes [12]
+  task  2  learners  7  acc soft  33.40 oracle  70.13  task-IL  34.00  route soft  46.93 own  33.5 cons  48.2 shared  43.6 lr  34.7  39s
+    split: learner 2 -> child 8 takes [15, 19]
+    split: learner 3 -> child 9 takes [17]
+    split: learner 1 -> child 10 takes [16]
+    split: learner 2 -> child 11 takes [18]
+  task  3  learners 11  acc soft  32.45 oracle  78.95  task-IL  31.65  route soft  40.30 own  39.5 cons  39.3 shared  33.9 lr  29.0  42s
+    split: learner 7 -> child 12 takes [20]
+    split: learner 6 -> child 13 takes [23]
+    split: learner 2 -> child 14 takes [21]
+    split: learner 2 -> child 15 takes [22]
+    split: learner 2 -> child 16 takes [24]
+  task  4  learners 16  acc soft  31.28 oracle  81.72  task-IL  29.08  route soft  37.92 own  37.5 cons  36.2 shared  30.9 lr  26.1  51s
+    split: learner 8 -> child 17 takes [27]
+    split: learner 13 -> child 18 takes [26]
+    split: learner 5 -> child 19 takes [28]
+    split: learner 3 -> child 20 takes [29]
+  task  5  learners 20  acc soft  29.00 oracle  82.70  task-IL  27.70  route soft  34.60 own  32.3 cons  32.4 shared  26.7 lr  20.3  56s
+  task  6  learners 20  acc soft  27.49 oracle  77.40  task-IL  33.34  route soft  33.29 own  32.4 cons  30.5 shared  25.3 lr  19.8  40s
+  task  7  learners 20  acc soft  25.40 oracle  71.97  task-IL  36.75  route soft  35.20 own  29.6 cons  32.8 shared  29.3 lr  19.7  33s
+  task  8  learners 20  acc soft  24.58 oracle  65.29  task-IL  35.84  route soft  35.56 own  31.8 cons  32.2 shared  28.4 lr  24.6  57s
+  task  9  learners 20  acc soft  22.92 oracle  64.10  task-IL  41.14  route soft  34.30 own  28.1 cons  32.1 shared  29.7 lr  24.0  40s
+  task 10  learners 20  acc soft  23.87 oracle  62.82  task-IL  38.93  route soft  36.27 own  24.5 cons  34.0 shared  31.5 lr  24.1  34s
+  task 11  learners 20  acc soft  22.78 oracle  61.88  task-IL  43.35  route soft  34.72 own  25.2 cons  32.9 shared  30.0 lr  24.0  44s
+  task 12  learners 20  acc soft  23.37 oracle  59.35  task-IL  45.43  route soft  34.20 own  25.0 cons  32.8 shared  29.9 lr  22.0  45s
+  task 13  learners 20  acc soft  20.43 oracle  55.93  task-IL  46.87  route soft  34.26 own  28.0 cons  31.6 shared  29.6 lr  21.8  54s
+  task 14  learners 20  acc soft  21.79 oracle  58.23  task-IL  49.83  route soft  35.56 own  27.7 cons  31.3 shared  30.5 lr  22.9  32s
+  task 15  learners 20  acc soft  20.36 oracle  54.39  task-IL  49.90  route soft  34.71 own  27.9 cons  30.5 shared  29.8 lr  21.5  50s
+  task 16  learners 20  acc soft  20.19 oracle  53.20  task-IL  49.71  route soft  33.92 own  28.1 cons  30.3 shared  30.2 lr  22.2  43s
+  task 17  learners 20  acc soft  20.14 oracle  53.06  task-IL  50.37  route soft  35.18 own  27.5 cons  30.9 shared  31.1 lr  21.1  34s
+  task 18  learners 20  acc soft  19.83 oracle  51.11  task-IL  51.85  route soft  36.01 own  26.4 cons  33.3 shared  31.4 lr  20.5  44s
+  task 19  learners 20  acc soft  18.63 oracle  49.80  task-IL  51.58  route soft  35.12 own  25.8 cons  33.6 shared  31.7 lr  19.9  60s
+
+final acc soft 18.63  oracle 49.80  task-IL 51.58 (forgetting 5.27, new-task 46.42)  routing soft 35.12  learners 20  splits 18 + 1 on arrival  (14.1 min) -> /home/appadmin/FYP2/results/stage2c_tuned/predictive_nested_heads_disjoint_th0.05/seed0/summary.json

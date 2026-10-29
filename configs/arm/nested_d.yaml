@@ -1,5 +1,7 @@
-# nested_d.yaml — nested objectives (surprise minimisation, double backward)
+# nested_d.yaml — nested objectives (surprise minimisation, double backward).
+# Second-order gradients; grad_clip matters most here.
 name: nested_d
 rule: nested_objectives
+lr: 0.1
 nesting: {depth: 3, periods: [1, 4, 16], ordering: slow_deep}
 rule_kwargs: {surprise_weight: 0.1, accumulate: mean}

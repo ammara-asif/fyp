@@ -1,0 +1,263 @@
+{
+  "run": "reactive_nested_a_recurring",
+  "stage": "2b",
+  "trigger": "reactive",
+  "arm": "nested_a",
+  "stream": "recurring",
+  "seed": 0,
+  "theta": 0.1,
+  "delta": 0.1,
+  "epochs": 2,
+  "lr": 0.1,
+  "final_avg_acc": 8.333333333333334,
+  "final_avg_acc_conf": 8.333333333333334,
+  "avg_incremental_acc": 9.777777777777779,
+  "avg_incremental_acc_conf": 9.777777777777779,
+  "forgetting": 15.0,
+  "forgetting_conf": 15.0,
+  "n_modules": 1,
+  "n_tasks": 6,
+  "n_splits": 0,
+  "n_absorbs": 0,
+  "routing_acc_test": 100.0,
+  "routing_acc_conf": 100.0,
+  "params": 1109240,
+  "anchor_kb": 1125.0,
+  "conflict_pct": {
+    "10": NaN,
+    "25": NaN,
+    "50": NaN,
+    "75": NaN,
+    "90": NaN
+  },
+  "split_log": [],
+  "event_log": [
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 0,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 1,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 2,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 3,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 4,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 5,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 6,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 7,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 8,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 9,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 10,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 11,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 12,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 13,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 14,
+      "uid": 1
+    }
+  ],
+  "per_task": [
+    {
+      "task": 0,
+      "group": 0,
+      "n_modules": 1,
+      "avg_acc": 20.0,
+      "avg_acc_conf": 20.0,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 375.0,
+      "secs": 3.960463523864746
+    },
+    {
+      "task": 1,
+      "group": 1,
+      "n_modules": 1,
+      "avg_acc": 10.0,
+      "avg_acc_conf": 10.0,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 750.0,
+      "secs": 0.3989856243133545
+    },
+    {
+      "task": 2,
+      "group": 2,
+      "n_modules": 1,
+      "avg_acc": 5.333333333333333,
+      "avg_acc_conf": 5.333333333333333,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 1125.0,
+      "secs": 0.41446399688720703
+    },
+    {
+      "task": 3,
+      "group": 0,
+      "n_modules": 1,
+      "avg_acc": 7.666666666666667,
+      "avg_acc_conf": 7.666666666666667,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 1125.0,
+      "secs": 0.3700101375579834
+    },
+    {
+      "task": 4,
+      "group": 1,
+      "n_modules": 1,
+      "avg_acc": 7.333333333333333,
+      "avg_acc_conf": 7.333333333333333,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 1125.0,
+      "secs": 0.370711088180542
+    },
+    {
+      "task": 5,
+      "group": 2,
+      "n_modules": 1,
+      "avg_acc": 8.333333333333334,
+      "avg_acc_conf": 8.333333333333334,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 1125.0,
+      "secs": 0.3739190101623535
+    }
+  ],
+  "per_group_history": {
+    "proto": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        23.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        22.0,
+        0.0
+      ],
+      "2": [
+        16.0,
+        0.0,
+        0.0,
+        25.0
+      ]
+    },
+    "conf": {
+      "0": [
+        20.0,
+        0.0,
+        0.0,
+        23.0,
+        0.0,
+        0.0
+      ],
+      "1": [
+        20.0,
+        0.0,
+        0.0,
+        22.0,
+        0.0
+      ],
+      "2": [
+        16.0,
+        0.0,
+        0.0,
+        25.0
+      ]
+    }
+  },
+  "minutes": 0.148768941561381,
+  "fake_data": true,
+  "val": false
+}

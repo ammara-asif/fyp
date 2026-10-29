@@ -1,0 +1,9 @@
+# avg_control.yaml — Stage 1's averaging control: every level steps every 4
+# batches on the mean gradient (197 updates/task at every level). Same gradient
+# averaging as nested_a, NO speed difference between levels. Stage 1 showed the
+# layer4 gain of nested_a is explained by this control, the layer3 gain is not.
+name: avg_control
+rule: periodic
+lr: 0.3   # Stage 1 validation-tuned
+nesting: {depth: 3, periods: [4, 4, 4], ordering: slow_deep}
+rule_kwargs: {accumulate: mean}

@@ -1,0 +1,10 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode single --arm nested_a --stream recurring --seed 0 --out /home/appadmin/FYP2/results/stage2_smoke/single_nested_a_recurring/seed0 --fake-data --epochs 2 --n-tasks 6
+single_nested_a_recurring seed=0 device=cuda lr=0.1 window=5 min_iters=10 cap=30
+  task  0  modules  0  acc  20.00  route(test)    nan  route(train)   0.00  abstain   0.0%  7s
+  task  1  modules  0  acc  10.00  route(test)    nan  route(train)   0.00  abstain   0.0%  0s
+  task  2  modules  0  acc   7.00  route(test)    nan  route(train)   0.00  abstain   0.0%  0s
+  task  3  modules  0  acc   9.67  route(test)    nan  route(train)   0.00  abstain   0.0%  0s
+  task  4  modules  0  acc   6.33  route(test)    nan  route(train)   0.00  abstain   0.0%  0s
+  task  5  modules  0  acc   7.67  route(test)    nan  route(train)   0.00  abstain   0.0%  0s
+
+final acc 7.67  avg-inc 10.11  forgetting 16.00  modules 0  (0.2 min)  -> /home/appadmin/FYP2/results/stage2_smoke/single_nested_a_recurring/seed0/summary.json

@@ -1,0 +1,28 @@
+# /home/appadmin/venv-fyp/bin/python3 /home/appadmin/FYP2/experiments/stage2c.py --trigger never --arm nested_a --stream disjoint --nf 90 --seed 1 --out /home/appadmin/FYP2/results/stage2c_tuned/never_nested_a_disjoint_nf90/seed1
+Files already downloaded and verified
+Files already downloaded and verified
+never_nested_a_disjoint seed=1 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  70.80 oracle  70.80  task-IL  70.80  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  48s
+  task  1  learners  1  acc soft  53.40 oracle  53.40  task-IL  69.40  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  44s
+  task  2  learners  1  acc soft  39.13 oracle  39.13  task-IL  67.67  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  44s
+  task  3  learners  1  acc soft  38.05 oracle  38.05  task-IL  68.20  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  44s
+  task  4  learners  1  acc soft  41.52 oracle  41.52  task-IL  73.64  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  45s
+  task  5  learners  1  acc soft  28.37 oracle  28.37  task-IL  67.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  45s
+  task  6  learners  1  acc soft  31.77 oracle  31.77  task-IL  70.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  46s
+  task  7  learners  1  acc soft  32.12 oracle  32.12  task-IL  74.38  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  47s
+  task  8  learners  1  acc soft  28.69 oracle  28.69  task-IL  73.36  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  42s
+  task  9  learners  1  acc soft  32.50 oracle  32.50  task-IL  75.50  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  44s
+  task 10  learners  1  acc soft  32.76 oracle  32.76  task-IL  76.53  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  40s
+  task 11  learners  1  acc soft  27.60 oracle  27.60  task-IL  74.62  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  44s
+  task 12  learners  1  acc soft  29.05 oracle  29.05  task-IL  75.22  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  45s
+  task 13  learners  1  acc soft  30.14 oracle  30.14  task-IL  78.17  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  46s
+  task 14  learners  1  acc soft  26.76 oracle  26.76  task-IL  76.93  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  43s
+  task 15  learners  1  acc soft  23.59 oracle  23.59  task-IL  75.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  46s
+  task 16  learners  1  acc soft  25.68 oracle  25.68  task-IL  78.44  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  46s
+  task 17  learners  1  acc soft  27.26 oracle  27.26  task-IL  77.71  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  46s
+  task 18  learners  1  acc soft  27.02 oracle  27.02  task-IL  78.11  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  45s
+  task 19  learners  1  acc soft  23.80 oracle  23.80  task-IL  77.64  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  48s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc soft 23.80  oracle 23.80  task-IL 77.64 (forgetting 5.01, new-task 81.01)  routing soft 100.00  learners 1  splits 0 + 0 on arrival  (15.1 min) -> /home/appadmin/FYP2/results/stage2c_tuned/never_nested_a_disjoint_nf90/seed1/summary.json

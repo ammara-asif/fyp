@@ -1,0 +1,29 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode frozen --arm nested_a --stream recurring --seed 0 --out /home/appadmin/FYP2/results/stage2/frozen_nested_a_recurring/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+frozen_nested_a_recurring seed=0 device=cuda lr=0.1 window=40 min_iters=80 cap=600
+    spawn #1 at task 0: classes [0, 1, 2, 3, 4] (plateau, after 112 main iters)
+  task  0  modules  1  acc  57.80  route(test) 100.00  route(train)  91.34  abstain  66.1%  9s
+  task  1  modules  1  acc  33.50  route(test)  61.80  route(train)  25.28  abstain  25.3%  5s
+    spawn #2 at task 2: classes [5, 6, 7, 8, 9, 10, 11, 13, 14] (plateau, after 80 main iters)
+  task  2  modules  2  acc  15.27  route(test)  55.87  route(train)  36.98  abstain   7.5%  5s
+  task  3  modules  2  acc  12.35  route(test)  42.20  route(train)   3.68  abstain   3.7%  6s
+  task  4  modules  2  acc   9.04  route(test)  40.56  route(train)   4.64  abstain   4.6%  6s
+  task  5  modules  2  acc   8.57  route(test)  40.57  route(train)   3.28  abstain   3.3%  7s
+  task  6  modules  2  acc   8.06  route(test)  40.29  route(train)   7.20  abstain   7.2%  7s
+  task  7  modules  2  acc   6.70  route(test)  36.75  route(train)   3.28  abstain   3.3%  7s
+  task  8  modules  2  acc   5.76  route(test)  34.84  route(train)   2.56  abstain   2.6%  7s
+  task  9  modules  2  acc   5.48  route(test)  34.44  route(train)   3.04  abstain   3.0%  7s
+  task 10  modules  2  acc   5.78  route(test)  37.54  route(train)  38.96  abstain   2.3%  7s
+  task 11  modules  2  acc   5.40  route(test)  34.78  route(train)  66.16  abstain   2.7%  7s
+  task 12  modules  2  acc   5.42  route(test)  33.54  route(train)  54.16  abstain   1.0%  7s
+  task 13  modules  2  acc   4.68  route(test)  31.88  route(train)   2.40  abstain   2.4%  7s
+  task 14  modules  2  acc   4.68  route(test)  46.24  route(train)   5.04  abstain   5.0%  7s
+  task 15  modules  2  acc   4.72  route(test)  38.78  route(train)   3.68  abstain   3.7%  7s
+  task 16  modules  2  acc   4.00  route(test)  55.58  route(train)   6.16  abstain   6.2%  8s
+  task 17  modules  2  acc   4.82  route(test)  43.38  route(train)   2.80  abstain   2.8%  7s
+  task 18  modules  2  acc   4.66  route(test)  37.22  route(train)   2.24  abstain   2.2%  7s
+    spawn #3 at task 19: classes [18, 21, 22, 23, 24, 26, 27, 28, 30, 32, 33, 34, 38, 39, 40, 44, 45, 47, 49] (plateau, after 113 main iters)
+  task 19  modules  3  acc   5.38  route(test)  29.68  route(train)  11.68  abstain   1.3%  8s
+
+final acc 5.38  avg-inc 10.60  forgetting 16.76  modules 3  (2.4 min)  -> /home/appadmin/FYP2/results/stage2/frozen_nested_a_recurring/seed0/summary.json

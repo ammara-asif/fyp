@@ -1,0 +1,36 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm nested_a --stream disjoint --theta 0.05 --val --out /home/appadmin/FYP2/results/stage2c_tuning/predictive_nested_a/v0.05 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train; test set untouched
+predictive_nested_a_disjoint_th0.05 seed=0 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  59.20 oracle  59.20  task-IL  59.20  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  15s
+    new learner 2 (from 1) for classes [7, 9]: conflicts with every learner
+    split: learner 1 -> child 3 takes [5, 8]
+    split: learner 1 -> child 4 takes [6]
+  task  1  learners  4  acc soft  52.00 oracle  76.80  task-IL  41.80  route soft  67.20 own  55.6 cons  65.6 shared  61.8 lr  67.6  31s
+    split: learner 3 -> child 5 takes [10]
+    split: learner 1 -> child 6 takes [14]
+    split: learner 2 -> child 7 takes [13]
+    split: learner 2 -> child 8 takes [11]
+    split: learner 2 -> child 9 takes [12]
+  task  2  learners  9  acc soft  43.60 oracle  84.27  task-IL  35.33  route soft  52.53 own  46.7 cons  51.1 shared  43.3 lr  47.9  45s
+    split: learner 5 -> child 10 takes [16]
+    split: learner 2 -> child 11 takes [19]
+    split: learner 3 -> child 12 takes [18]
+    split: learner 2 -> child 13 takes [17]
+    split: learner 2 -> child 14 takes [15]
+  task  3  learners 14  acc soft  39.00 oracle  88.30  task-IL  31.40  route soft  44.60 own  33.1 cons  41.6 shared  35.2 lr  39.9  46s
+    split: learner 1 -> child 15 takes [24]
+    split: learner 4 -> child 16 takes [23]
+    split: learner 13 -> child 17 takes [22]
+    split: learner 4 -> child 18 takes [20]
+  task  4  learners 18  acc soft  35.84 oracle  85.92  task-IL  27.60  route soft  42.72 own  37.6 cons  40.1 shared  35.8 lr  37.3  49s
+    split: learner 1 -> child 19 takes [26, 29]
+    split: learner 1 -> child 20 takes [27]
+  task  5  learners 20  acc soft  33.67 oracle  82.13  task-IL  26.27  route soft  41.93 own  35.7 cons  40.1 shared  34.7 lr  35.1  36s
+  task  6  learners 20  acc soft  29.83 oracle  73.66  task-IL  28.57  route soft  44.23 own  35.0 cons  42.1 shared  38.0 lr  34.2  30s
+  task  7  learners 20  acc soft  28.15 oracle  69.55  task-IL  31.35  route soft  44.05 own  36.8 cons  42.1 shared  37.8 lr  33.5  31s
+  task  8  learners 20  acc soft  26.98 oracle  64.31  task-IL  33.60  route soft  49.60 own  43.9 cons  48.1 shared  43.3 lr  33.1  23s
+  task  9  learners 20  acc soft  25.92 oracle  60.56  task-IL  37.84  route soft  51.04 own  38.4 cons  49.2 shared  45.1 lr  33.1  40s
+
+final acc soft 25.92  oracle 60.56  task-IL 37.84 (forgetting 2.22, new-task 37.36)  routing soft 51.04  learners 20  splits 18 + 1 on arrival  (5.9 min) -> /home/appadmin/FYP2/results/stage2c_tuning/predictive_nested_a/v0.05/summary.json

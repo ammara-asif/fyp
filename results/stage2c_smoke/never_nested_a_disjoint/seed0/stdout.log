@@ -1,0 +1,12 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger never --arm nested_a --stream disjoint --seed 0 --out /home/appadmin/FYP2/results/stage2c_smoke/never_nested_a_disjoint/seed0 --fake-data --epochs 2 --n-tasks 6
+never_nested_a_disjoint seed=0 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  20.00 oracle  20.00  task-IL  20.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  4s
+  task  1  learners  1  acc soft  10.00 oracle  10.00  task-IL  21.50  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  2  learners  1  acc soft  12.00 oracle  12.00  task-IL  34.67  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  3  learners  1  acc soft   5.00 oracle   5.00  task-IL  20.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  4  learners  1  acc soft   5.20 oracle   5.20  task-IL  22.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  5  learners  1  acc soft   6.83 oracle   6.83  task-IL  40.33  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc soft 6.83  oracle 6.83  task-IL 40.33 (forgetting 1.40, new-task 27.17)  routing soft 100.00  learners 1  splits 0 + 0 on arrival  (0.2 min) -> /home/appadmin/FYP2/results/stage2c_smoke/never_nested_a_disjoint/seed0/summary.json

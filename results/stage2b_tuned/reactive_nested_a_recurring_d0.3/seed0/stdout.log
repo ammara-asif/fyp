@@ -1,0 +1,33 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger reactive --arm nested_a --stream recurring --delta 0.3 --seed 0 --out /home/appadmin/FYP2/results/stage2b_tuned/reactive_nested_a_recurring_d0.3/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+reactive_nested_a_recurring seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  61.40 conf  61.40  route proto 100.00 conf 100.00  conflict   -    11s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9] (signal 0.480)
+  task  1  learners  2  acc proto  41.60 conf  41.40  route proto  64.40 conf  60.90  conflict   -    7s
+    split: learner 1 -> child 3 takes [10, 13, 14] (signal 0.520)
+  task  2  learners  3  acc proto  31.93 conf  28.00  route proto  44.27 conf  38.33  conflict   -    10s
+    split: learner 3 -> child 4 takes [15, 17, 18, 19] (signal 0.267)
+  task  3  learners  4  acc proto  24.85 conf  20.45  route proto  36.25 conf  29.70  conflict   -    10s
+  task  4  learners  4  acc proto  22.88 conf  19.20  route proto  32.00 conf  26.40  conflict   -    16s
+  task  5  learners  4  acc proto  21.37 conf  21.97  route proto  32.50 conf  32.03  conflict   -    12s
+    split: learner 3 -> child 5 takes [32, 33] (signal 0.343)
+  task  6  learners  5  acc proto  18.06 conf  11.06  route proto  28.34 conf  15.69  conflict   -    13s
+  task  7  learners  5  acc proto  18.60 conf  12.30  route proto  28.35 conf  17.20  conflict   -    11s
+    split: learner 5 -> child 6 takes [40, 41] (signal 0.267)
+  task  8  learners  6  acc proto  18.36 conf  12.56  route proto  27.40 conf  16.73  conflict   -    16s
+  task  9  learners  6  acc proto  16.44 conf  11.08  route proto  25.70 conf  14.44  conflict   -    14s
+  task 10  learners  6  acc proto  17.68 conf  11.16  route proto  26.58 conf  14.12  conflict   -    8s
+  task 11  learners  6  acc proto  17.80 conf  10.80  route proto  26.92 conf  13.52  conflict   -    6s
+  task 12  learners  6  acc proto  18.80 conf  11.78  route proto  27.90 conf  14.56  conflict   -    9s
+  task 13  learners  6  acc proto  18.10 conf  13.28  route proto  26.94 conf  16.70  conflict   -    9s
+  task 14  learners  6  acc proto  17.92 conf  14.28  route proto  25.46 conf  18.98  conflict   -    14s
+  task 15  learners  6  acc proto  19.52 conf  14.98  route proto  26.94 conf  19.46  conflict   -    11s
+  task 16  learners  6  acc proto  19.32 conf  12.46  route proto  25.64 conf  15.56  conflict   -    11s
+  task 17  learners  6  acc proto  20.64 conf  11.42  route proto  29.18 conf  14.18  conflict   -    9s
+  task 18  learners  6  acc proto  19.06 conf   9.60  route proto  26.72 conf  12.52  conflict   -    13s
+  task 19  learners  6  acc proto  18.46 conf  11.54  route proto  25.62 conf  14.62  conflict   -    11s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc proto 18.46 conf 11.54  learners 6  splits 5  absorbs 20  conflict p50 nan  (3.8 min) -> /home/appadmin/FYP2/results/stage2b_tuned/reactive_nested_a_recurring_d0.3/seed0/summary.json

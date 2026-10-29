@@ -1,0 +1,10 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm nested_a --stream disjoint --theta 0.3 --seed 0 --out /home/appadmin/FYP2/results/stage2b_smoke/predictive_nested_a_disjoint_th0.3/seed0 --fake-data --epochs 2 --n-tasks 6
+predictive_nested_a_disjoint_th0.3 seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  23.00 conf  23.00  route proto 100.00 conf 100.00  conflict   -    4s
+  task  1  learners  1  acc proto  11.50 conf  11.50  route proto 100.00 conf 100.00  conflict   -    1s
+  task  2  learners  1  acc proto   7.33 conf   7.33  route proto 100.00 conf 100.00  conflict   -    1s
+  task  3  learners  1  acc proto   5.00 conf   5.00  route proto 100.00 conf 100.00  conflict   -    1s
+  task  4  learners  1  acc proto   4.00 conf   4.00  route proto 100.00 conf 100.00  conflict   -    1s
+  task  5  learners  1  acc proto   3.33 conf   3.33  route proto 100.00 conf 100.00  conflict 0.084  1s
+
+final acc proto 3.33 conf 3.33  learners 1  splits 0  absorbs 1  conflict p50 0.084  (0.2 min) -> /home/appadmin/FYP2/results/stage2b_smoke/predictive_nested_a_disjoint_th0.3/seed0/summary.json

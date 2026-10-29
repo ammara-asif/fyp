@@ -1,0 +1,47 @@
+# /home/appadmin/venv-fyp/bin/python3 /home/appadmin/FYP2/experiments/stage2c.py --trigger reactive --arm nested_a --stream disjoint --delta 0.05 --seed 2 --out /home/appadmin/FYP2/results/stage2c_tuned/reactive_nested_a_disjoint_d0.05/seed2
+Files already downloaded and verified
+Files already downloaded and verified
+reactive_nested_a_disjoint_d0.05 seed=2 device=cuda lr=0.5 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  73.60 oracle  73.60  task-IL  73.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  20s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9]
+  task  1  learners  2  acc soft  57.60 oracle  71.00  task-IL  71.00  route soft  75.50 own  69.0 cons  73.0 shared  70.1 lr  76.1  16s
+    split: learner 2 -> child 3 takes [11, 13]
+    split: learner 1 -> child 4 takes [10, 12, 14]
+  task  2  learners  4  acc soft  45.40 oracle  74.67  task-IL  66.13  route soft  57.00 own  54.3 cons  53.1 shared  47.6 lr  55.9  22s
+    split: learner 1 -> child 5 takes [15, 16, 17, 18, 19]
+  task  3  learners  5  acc soft  41.20 oracle  73.70  task-IL  67.15  route soft  51.40 own  42.4 cons  47.3 shared  43.5 lr  48.7  17s
+    split: learner 3 -> child 6 takes [24]
+    split: learner 4 -> child 7 takes [21]
+    split: learner 5 -> child 8 takes [23]
+    split: learner 2 -> child 9 takes [22]
+    split: learner 1 -> child 10 takes [20]
+  task  4  learners 10  acc soft  37.64 oracle  74.76  task-IL  54.20  route soft  47.32 own  41.4 cons  45.8 shared  37.1 lr  45.4  47s
+    split: learner 8 -> child 11 takes [28]
+    split: learner 5 -> child 12 takes [25, 26, 27]
+    split: learner 1 -> child 13 takes [29]
+  task  5  learners 13  acc soft  34.47 oracle  77.93  task-IL  49.60  route soft  41.33 own  38.1 cons  38.8 shared  30.1 lr  39.7  35s
+    split: learner 6 -> child 14 takes [32]
+    split: learner 5 -> child 15 takes [34]
+    split: learner 3 -> child 16 takes [31, 33]
+    split: learner 2 -> child 17 takes [30]
+  task  6  learners 17  acc soft  31.71 oracle  80.03  task-IL  45.71  route soft  37.49 own  34.6 cons  35.6 shared  26.5 lr  36.1  45s
+    split: learner 5 -> child 18 takes [36, 39]
+    split: learner 1 -> child 19 takes [37, 38]
+    split: learner 6 -> child 20 takes [35]
+  task  7  learners 20  acc soft  30.38 oracle  81.15  task-IL  41.45  route soft  34.58 own  31.0 cons  31.1 shared  24.2 lr  32.4  40s
+  task  8  learners 20  acc soft  28.78 oracle  79.51  task-IL  42.62  route soft  33.33 own  31.2 cons  30.7 shared  25.0 lr  30.5  41s
+  task  9  learners 20  acc soft  27.62 oracle  74.12  task-IL  43.18  route soft  33.06 own  30.4 cons  29.1 shared  24.8 lr  31.1  50s
+  task 10  learners 20  acc soft  28.42 oracle  70.56  task-IL  46.40  route soft  35.09 own  32.2 cons  29.5 shared  28.1 lr  30.7  49s
+  task 11  learners 20  acc soft  28.52 oracle  70.22  task-IL  45.02  route soft  36.90 own  31.0 cons  31.4 shared  29.7 lr  30.2  42s
+  task 12  learners 20  acc soft  27.05 oracle  67.22  task-IL  48.49  route soft  35.60 own  29.6 cons  31.0 shared  29.8 lr  29.0  61s
+  task 13  learners 20  acc soft  27.91 oracle  66.27  task-IL  49.54  route soft  36.94 own  29.7 cons  32.3 shared  30.7 lr  27.9  45s
+  task 14  learners 20  acc soft  25.39 oracle  63.95  task-IL  50.20  route soft  36.92 own  30.6 cons  33.2 shared  30.9 lr  27.0  55s
+  task 15  learners 20  acc soft  25.64 oracle  62.45  task-IL  50.03  route soft  37.04 own  28.9 cons  34.7 shared  31.7 lr  27.5  56s
+  task 16  learners 20  acc soft  23.22 oracle  59.69  task-IL  48.36  route soft  37.59 own  27.3 cons  36.4 shared  32.4 lr  26.3  56s
+  task 17  learners 20  acc soft  24.18 oracle  57.68  task-IL  47.99  route soft  39.79 own  32.7 cons  37.0 shared  33.7 lr  25.4  58s
+  task 18  learners 20  acc soft  23.56 oracle  55.67  task-IL  49.43  route soft  39.74 own  29.6 cons  37.6 shared  33.2 lr  26.1  51s
+  task 19  learners 20  acc soft  22.41 oracle  55.29  task-IL  51.61  route soft  38.76 own  34.8 cons  36.0 shared  32.6 lr  24.3  61s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc soft 22.41  oracle 55.29  task-IL 51.61 (forgetting 3.11, new-task 49.72)  routing soft 38.76  learners 20  splits 19 + 0 on arrival  (14.5 min) -> /home/appadmin/FYP2/results/stage2c_tuned/reactive_nested_a_disjoint_d0.05/seed2/summary.json

@@ -1,0 +1,6 @@
+{
+  "predictive_nested_a": 0.5,
+  "predictive_flat": 0.2,
+  "predictive_nested_heads": 0.05,
+  "reactive_nested_a": 0.05
+}

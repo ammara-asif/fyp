@@ -1,0 +1,11 @@
+# flat_llrd6.yaml — secondary control: per-block LLRD, 6 groups.
+# Not matched to nested_a's slab structure; reported for completeness only.
+name: flat_llrd6
+rule: per_level_lr
+lr: 0.5
+nesting:
+  depth: 6
+  periods: [1, 1, 1, 1, 1, 1]
+  lr_ratios: [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125]
+  ordering: slow_deep
+rule_kwargs: {}

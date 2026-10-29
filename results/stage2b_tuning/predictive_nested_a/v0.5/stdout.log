@@ -1,0 +1,17 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm nested_a --stream disjoint --theta 0.5 --val --out /home/appadmin/FYP2/results/stage2b_tuning/predictive_nested_a/v0.5 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train held out; test set untouched
+predictive_nested_a_disjoint_th0.5 seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  69.20 conf  69.20  route proto 100.00 conf 100.00  conflict   -    15s
+  task  1  learners  1  acc proto  49.00 conf  49.00  route proto 100.00 conf 100.00  conflict 0.019  10s
+  task  2  learners  1  acc proto  37.73 conf  37.73  route proto 100.00 conf 100.00  conflict 0.022  10s
+  task  3  learners  1  acc proto  30.50 conf  30.50  route proto 100.00 conf 100.00  conflict 0.009  9s
+  task  4  learners  1  acc proto  32.40 conf  32.40  route proto 100.00 conf 100.00  conflict 0.106  10s
+  task  5  learners  1  acc proto  27.33 conf  27.33  route proto 100.00 conf 100.00  conflict 0.011  11s
+  task  6  learners  1  acc proto  27.77 conf  27.77  route proto 100.00 conf 100.00  conflict 0.020  11s
+  task  7  learners  1  acc proto  22.50 conf  22.50  route proto 100.00 conf 100.00  conflict 0.020  11s
+  task  8  learners  1  acc proto  20.44 conf  20.44  route proto 100.00 conf 100.00  conflict 0.013  10s
+  task  9  learners  1  acc proto  22.16 conf  22.16  route proto 100.00 conf 100.00  conflict 0.022  10s
+
+final acc proto 22.16 conf 22.16  learners 1  splits 0  absorbs 10  conflict p50 0.004  (1.9 min) -> /home/appadmin/FYP2/results/stage2b_tuning/predictive_nested_a/v0.5/summary.json

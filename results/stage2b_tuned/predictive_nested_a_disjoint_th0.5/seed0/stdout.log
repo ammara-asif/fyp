@@ -1,0 +1,26 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm nested_a --stream disjoint --theta 0.5 --seed 0 --out /home/appadmin/FYP2/results/stage2b_tuned/predictive_nested_a_disjoint_th0.5/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+predictive_nested_a_disjoint_th0.5 seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  69.60 conf  69.60  route proto 100.00 conf 100.00  conflict   -    15s
+  task  1  learners  1  acc proto  54.50 conf  54.50  route proto 100.00 conf 100.00  conflict 0.031  12s
+  task  2  learners  1  acc proto  33.07 conf  33.07  route proto 100.00 conf 100.00  conflict 0.031  12s
+  task  3  learners  1  acc proto  33.95 conf  33.95  route proto 100.00 conf 100.00  conflict 0.043  12s
+  task  4  learners  1  acc proto  34.04 conf  34.04  route proto 100.00 conf 100.00  conflict 0.035  12s
+  task  5  learners  1  acc proto  26.60 conf  26.60  route proto 100.00 conf 100.00  conflict 0.014  12s
+  task  6  learners  1  acc proto  27.89 conf  27.89  route proto 100.00 conf 100.00  conflict 0.028  12s
+  task  7  learners  1  acc proto  26.73 conf  26.73  route proto 100.00 conf 100.00  conflict 0.003  13s
+  task  8  learners  1  acc proto  23.18 conf  23.18  route proto 100.00 conf 100.00  conflict 0.011  13s
+  task  9  learners  1  acc proto  25.02 conf  25.02  route proto 100.00 conf 100.00  conflict 0.009  13s
+  task 10  learners  1  acc proto  23.02 conf  23.02  route proto 100.00 conf 100.00  conflict 0.032  13s
+  task 11  learners  1  acc proto  20.62 conf  20.62  route proto 100.00 conf 100.00  conflict 0.004  13s
+  task 12  learners  1  acc proto  24.46 conf  24.46  route proto 100.00 conf 100.00  conflict 0.006  13s
+  task 13  learners  1  acc proto  21.76 conf  21.76  route proto 100.00 conf 100.00  conflict 0.006  14s
+  task 14  learners  1  acc proto  21.20 conf  21.20  route proto 100.00 conf 100.00  conflict 0.010  13s
+  task 15  learners  1  acc proto  17.20 conf  17.20  route proto 100.00 conf 100.00  conflict 0.021  14s
+  task 16  learners  1  acc proto  20.16 conf  20.16  route proto 100.00 conf 100.00  conflict 0.014  14s
+  task 17  learners  1  acc proto  21.56 conf  21.56  route proto 100.00 conf 100.00  conflict 0.013  14s
+  task 18  learners  1  acc proto  17.85 conf  17.85  route proto 100.00 conf 100.00  conflict 0.001  15s
+  task 19  learners  1  acc proto  20.50 conf  20.50  route proto 100.00 conf 100.00  conflict 0.011  14s
+
+final acc proto 20.50 conf 20.50  learners 1  splits 0  absorbs 20  conflict p50 0.002  (4.5 min) -> /home/appadmin/FYP2/results/stage2b_tuned/predictive_nested_a_disjoint_th0.5/seed0/summary.json

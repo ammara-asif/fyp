@@ -1,0 +1,47 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger reactive --arm nested_a --stream disjoint --delta 0.3 --seed 0 --out /home/appadmin/FYP2/results/stage2b_tuned/reactive_nested_a_disjoint_d0.3/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+reactive_nested_a_disjoint seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc proto  73.20 conf  73.20  route proto 100.00 conf 100.00  conflict   -    15s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9] (signal 0.440)
+  task  1  learners  2  acc proto  52.10 conf  53.40  route proto  68.10 conf  68.60  conflict   -    12s
+    split: learner 2 -> child 3 takes [10, 12, 13] (signal 0.400)
+  task  2  learners  3  acc proto  34.40 conf  26.67  route proto  50.33 conf  38.20  conflict   -    18s
+    split: learner 2 -> child 4 takes [15, 18] (signal 0.360)
+    split: learner 3 -> child 5 takes [16, 17] (signal 0.467)
+  task  3  learners  5  acc proto  30.50 conf  22.95  route proto  38.20 conf  25.35  conflict   -    23s
+    split: learner 2 -> child 6 takes [20, 23, 24] (signal 0.360)
+  task  4  learners  6  acc proto  27.00 conf  16.96  route proto  34.64 conf  19.56  conflict   -    24s
+    split: learner 4 -> child 7 takes [26, 28] (signal 0.467)
+  task  5  learners  7  acc proto  24.57 conf  16.07  route proto  32.67 conf  18.47  conflict   -    24s
+    split: learner 3 -> child 8 takes [30] (signal 0.267)
+  task  6  learners  8  acc proto  19.97 conf   3.06  route proto  25.89 conf   3.06  conflict   -    19s
+  task  7  learners  8  acc proto  15.98 conf  10.62  route proto  20.73 conf  11.65  conflict   -    25s
+    split: learner 8 -> child 9 takes [40, 41, 42, 43, 44] (signal 0.467)
+  task  8  learners  9  acc proto  18.62 conf  10.40  route proto  23.84 conf  11.80  conflict   -    14s
+    split: learner 5 -> child 10 takes [49] (signal 0.400)
+  task  9  learners 10  acc proto  15.64 conf   2.24  route proto  19.96 conf   2.24  conflict   -    31s
+    split: learner 8 -> child 11 takes [50] (signal 0.400)
+  task 10  learners 11  acc proto  15.82 conf   2.47  route proto  19.49 conf   2.47  conflict   -    37s
+    split: learner 11 -> child 12 takes [55, 59] (signal 0.200)
+  task 11  learners 12  acc proto  13.93 conf   2.03  route proto  17.40 conf   2.05  conflict   -    30s
+    split: learner 10 -> child 13 takes [60] (signal 0.800)
+    split: learner 12 -> child 14 takes [63] (signal 0.400)
+  task 12  learners 14  acc proto  13.82 conf   1.98  route proto  16.46 conf   2.00  conflict   -    37s
+    split: learner 10 -> child 15 takes [65, 67, 68, 69] (signal 0.800)
+    split: learner 11 -> child 16 takes [66] (signal 0.600)
+  task 13  learners 16  acc proto  13.64 conf   1.84  route proto  15.99 conf   1.86  conflict   -    24s
+    split: learner 8 -> child 17 takes [73] (signal 0.333)
+    split: learner 10 -> child 18 takes [71] (signal 0.800)
+  task 14  learners 18  acc proto  12.89 conf   1.53  route proto  15.45 conf   1.53  conflict   -    40s
+    split: learner 8 -> child 19 takes [78, 79] (signal 0.333)
+    split: learner 15 -> child 20 takes [75, 77] (signal 0.400)
+  task 15  learners 20  acc proto  12.61 conf   1.44  route proto  14.40 conf   1.44  conflict   -    32s
+  task 16  learners 20  acc proto  11.29 conf   1.38  route proto  13.08 conf   1.38  conflict   -    36s
+  task 17  learners 20  acc proto  10.76 conf   1.30  route proto  12.71 conf   1.30  conflict   -    33s
+  task 18  learners 20  acc proto  10.89 conf   1.24  route proto  13.12 conf   1.24  conflict   -    33s
+  task 19  learners 20  acc proto  10.25 conf   1.17  route proto  12.59 conf   1.17  conflict   -    39s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc proto 10.25 conf 1.17  learners 20  splits 19  absorbs 42  conflict p50 nan  (9.1 min) -> /home/appadmin/FYP2/results/stage2b_tuned/reactive_nested_a_disjoint_d0.3/seed0/summary.json

@@ -7,20 +7,21 @@ device: cuda
 
 benchmark:
   n_experiences: 20
-  fixed_order: true          # identical class order across arms
+  fixed_order: true          # identical class order across arms AND seeds
 
 model:
   nf: 20
   num_classes: 100
 
-optim:                       # Mammoth seq-cifar100 SGD defaults
-  lr: 0.03
+optim:
+  lr: 0.1                    # fallback only; each arm overrides with its tuned rate
   momentum: 0.0
   weight_decay: 0.0
+  grad_clip: 1.0             # every arm, after EWC diverged to NaN in Stage 0
   reset_per_exp: true
 
 train:
-  epochs: 50
+  epochs: 10                 # epoch sweep showed gains flatten past 10
   mb_size: 32
   eval_mb_size: 256
 
@@ -29,6 +30,10 @@ probe:
   n_cka: 512
   n_probe_train: 1000
   n_probe_test: 500
+
+tune:                        # when enabled, selection happens on a validation
+  enabled: false             # slice carved from train; the test set is untouched
+  val_fraction: 0.1
 
 wandb:
   enabled: false

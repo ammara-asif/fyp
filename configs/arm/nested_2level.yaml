@@ -1,5 +1,6 @@
-# nested_2level.yaml — depth ablation
+# nested_2level.yaml — depth ablation (depth 1 = flat, 2 = here, 3 = nested_a)
 name: nested_2level
 rule: periodic
+lr: 0.5   # not tuned in Stage 1; uses nested_a's value
 nesting: {depth: 2, periods: [1, 16], ordering: slow_deep}
 rule_kwargs: {accumulate: mean}

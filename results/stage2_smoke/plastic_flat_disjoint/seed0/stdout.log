@@ -1,0 +1,12 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode plastic --arm flat --stream disjoint --seed 0 --out /home/appadmin/FYP2/results/stage2_smoke/plastic_flat_disjoint/seed0 --fake-data --epochs 2 --n-tasks 6
+plastic_flat_disjoint seed=0 device=cuda lr=0.1 window=10 min_iters=20 cap=60
+  task  0  modules  0  acc  20.00  route(test) 100.00  route(train) 100.00  abstain 100.0%  5s
+    spawn #1 at task 1: classes [0, 1, 2, 3, 4] (plateau, after 20 main iters)
+  task  1  modules  1  acc   8.00  route(test) 100.00  route(train)  16.33  abstain  99.2%  3s
+  task  2  modules  1  acc   8.33  route(test) 100.00  route(train)   5.00  abstain  97.3%  4s
+  task  3  modules  1  acc   5.75  route(test) 100.00  route(train)   4.50  abstain  97.8%  2s
+  task  4  modules  1  acc   6.80  route(test)  72.80  route(train)  24.17  abstain  96.3%  2s
+    spawn #2 at task 5: classes [22] (plateau, after 20 main iters)
+  task  5  modules  2  acc   6.00  route(test)  78.17  route(train)   8.00  abstain  90.3%  4s
+
+final acc 6.00  avg-inc 9.15  forgetting 0.60  modules 2  (0.4 min)  -> /home/appadmin/FYP2/results/stage2_smoke/plastic_flat_disjoint/seed0/summary.json

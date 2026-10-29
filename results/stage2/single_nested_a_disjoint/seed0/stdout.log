@@ -1,0 +1,26 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode single --arm nested_a --stream disjoint --seed 0 --out /home/appadmin/FYP2/results/stage2/single_nested_a_disjoint/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+single_nested_a_disjoint seed=0 device=cuda lr=0.1 window=79 min_iters=158 cap=1185
+  task  0  modules  0  acc  73.40  route(test)    nan  route(train)   0.00  abstain   0.0%  17s
+  task  1  modules  0  acc  49.20  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  2  modules  0  acc  32.27  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  3  modules  0  acc  32.95  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  4  modules  0  acc  34.16  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  5  modules  0  acc  26.17  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  6  modules  0  acc  26.17  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  7  modules  0  acc  24.48  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  8  modules  0  acc  22.11  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task  9  modules  0  acc  22.60  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task 10  modules  0  acc  22.76  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task 11  modules  0  acc  20.63  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task 12  modules  0  acc  22.26  route(test)    nan  route(train)   0.00  abstain   0.0%  12s
+  task 13  modules  0  acc  21.20  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task 14  modules  0  acc  19.64  route(test)    nan  route(train)   0.00  abstain   0.0%  12s
+  task 15  modules  0  acc  15.91  route(test)    nan  route(train)   0.00  abstain   0.0%  12s
+  task 16  modules  0  acc  18.35  route(test)    nan  route(train)   0.00  abstain   0.0%  11s
+  task 17  modules  0  acc  19.67  route(test)    nan  route(train)   0.00  abstain   0.0%  12s
+  task 18  modules  0  acc  16.67  route(test)    nan  route(train)   0.00  abstain   0.0%  12s
+  task 19  modules  0  acc  18.17  route(test)    nan  route(train)   0.00  abstain   0.0%  12s
+
+final acc 18.17  avg-inc 26.94  forgetting 53.82  modules 0  (4.0 min)  -> /home/appadmin/FYP2/results/stage2/single_nested_a_disjoint/seed0/summary.json

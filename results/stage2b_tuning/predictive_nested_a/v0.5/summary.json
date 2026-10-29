@@ -1,0 +1,767 @@
+{
+  "run": "predictive_nested_a_disjoint_th0.5",
+  "stage": "2b",
+  "trigger": "predictive",
+  "arm": "nested_a",
+  "stream": "disjoint",
+  "seed": 0,
+  "theta": 0.5,
+  "delta": 0.1,
+  "epochs": 5,
+  "lr": 0.1,
+  "final_avg_acc": 22.160000000000004,
+  "final_avg_acc_conf": 22.160000000000004,
+  "avg_incremental_acc": 33.90425396825397,
+  "avg_incremental_acc_conf": 33.90425396825397,
+  "forgetting": 51.111111111111114,
+  "forgetting_conf": 51.111111111111114,
+  "n_modules": 1,
+  "n_tasks": 10,
+  "n_splits": 0,
+  "n_absorbs": 10,
+  "routing_acc_test": 100.0,
+  "routing_acc_conf": 100.0,
+  "params": 1109240,
+  "anchor_kb": 3750.0,
+  "conflict_pct": {
+    "10": 0.0,
+    "25": 0.0,
+    "50": 0.004364458622322196,
+    "75": 0.026357801187606084,
+    "90": 0.0867693444314812
+  },
+  "split_log": [],
+  "event_log": [
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 0,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 1,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 2,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 3,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "assign",
+      "cls": 4,
+      "uid": 1
+    },
+    {
+      "task": 0,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 5,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 6,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 7,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 8,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "assign",
+      "cls": 9,
+      "uid": 1
+    },
+    {
+      "task": 1,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 10,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 11,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 12,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 13,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "assign",
+      "cls": 14,
+      "uid": 1
+    },
+    {
+      "task": 2,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 15,
+      "uid": 1
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 16,
+      "uid": 1
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 17,
+      "uid": 1
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 18,
+      "uid": 1
+    },
+    {
+      "task": 3,
+      "event": "assign",
+      "cls": 19,
+      "uid": 1
+    },
+    {
+      "task": 3,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 20,
+      "uid": 1
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 21,
+      "uid": 1
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 22,
+      "uid": 1
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 23,
+      "uid": 1
+    },
+    {
+      "task": 4,
+      "event": "assign",
+      "cls": 24,
+      "uid": 1
+    },
+    {
+      "task": 4,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 25,
+      "uid": 1
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 26,
+      "uid": 1
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 27,
+      "uid": 1
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 28,
+      "uid": 1
+    },
+    {
+      "task": 5,
+      "event": "assign",
+      "cls": 29,
+      "uid": 1
+    },
+    {
+      "task": 5,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 30,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 31,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 32,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 33,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "assign",
+      "cls": 34,
+      "uid": 1
+    },
+    {
+      "task": 6,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        30,
+        31,
+        32,
+        33,
+        34
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 35,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 36,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 37,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 38,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "assign",
+      "cls": 39,
+      "uid": 1
+    },
+    {
+      "task": 7,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 40,
+      "uid": 1
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 41,
+      "uid": 1
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 42,
+      "uid": 1
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 43,
+      "uid": 1
+    },
+    {
+      "task": 8,
+      "event": "assign",
+      "cls": 44,
+      "uid": 1
+    },
+    {
+      "task": 8,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "reason": "no-conflict"
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 45,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 46,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 47,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 48,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "assign",
+      "cls": 49,
+      "uid": 1
+    },
+    {
+      "task": 9,
+      "event": "absorb",
+      "uid": 1,
+      "classes": [
+        45,
+        46,
+        47,
+        48,
+        49
+      ],
+      "reason": "no-conflict"
+    }
+  ],
+  "per_task": [
+    {
+      "task": 0,
+      "group": 0,
+      "n_modules": 1,
+      "avg_acc": 69.2,
+      "avg_acc_conf": 69.2,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": null,
+      "params": 1109240,
+      "anchor_kb": 375.0,
+      "secs": 14.9130220413208
+    },
+    {
+      "task": 1,
+      "group": 1,
+      "n_modules": 1,
+      "avg_acc": 49.0,
+      "avg_acc_conf": 49.0,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.019108606975466482,
+      "params": 1109240,
+      "anchor_kb": 750.0,
+      "secs": 10.399099588394165
+    },
+    {
+      "task": 2,
+      "group": 2,
+      "n_modules": 1,
+      "avg_acc": 37.73333333333333,
+      "avg_acc_conf": 37.73333333333333,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.022384118857896988,
+      "params": 1109240,
+      "anchor_kb": 1125.0,
+      "secs": 10.14291262626648
+    },
+    {
+      "task": 3,
+      "group": 3,
+      "n_modules": 1,
+      "avg_acc": 30.5,
+      "avg_acc_conf": 30.5,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.009262147285635508,
+      "params": 1109240,
+      "anchor_kb": 1500.0,
+      "secs": 8.933303117752075
+    },
+    {
+      "task": 4,
+      "group": 4,
+      "n_modules": 1,
+      "avg_acc": 32.4,
+      "avg_acc_conf": 32.4,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.10553495871967504,
+      "params": 1109240,
+      "anchor_kb": 1875.0,
+      "secs": 10.424565076828003
+    },
+    {
+      "task": 5,
+      "group": 5,
+      "n_modules": 1,
+      "avg_acc": 27.333333333333332,
+      "avg_acc_conf": 27.333333333333332,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.010704490843982922,
+      "params": 1109240,
+      "anchor_kb": 2250.0,
+      "secs": 10.62554383277893
+    },
+    {
+      "task": 6,
+      "group": 6,
+      "n_modules": 1,
+      "avg_acc": 27.771428571428572,
+      "avg_acc_conf": 27.771428571428572,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.019693291553902245,
+      "params": 1109240,
+      "anchor_kb": 2625.0,
+      "secs": 10.808607339859009
+    },
+    {
+      "task": 7,
+      "group": 7,
+      "n_modules": 1,
+      "avg_acc": 22.5,
+      "avg_acc_conf": 22.5,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.020244559539215903,
+      "params": 1109240,
+      "anchor_kb": 3000.0,
+      "secs": 10.947003364562988
+    },
+    {
+      "task": 8,
+      "group": 8,
+      "n_modules": 1,
+      "avg_acc": 20.444444444444443,
+      "avg_acc_conf": 20.444444444444443,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.012921332513787858,
+      "params": 1109240,
+      "anchor_kb": 3375.0,
+      "secs": 9.740738153457642
+    },
+    {
+      "task": 9,
+      "group": 9,
+      "n_modules": 1,
+      "avg_acc": 22.160000000000004,
+      "avg_acc_conf": 22.160000000000004,
+      "routing_acc_test": 100.0,
+      "routing_acc_conf": 100.0,
+      "splits": 0,
+      "mean_conflict": 0.022362892102036208,
+      "params": 1109240,
+      "anchor_kb": 3750.0,
+      "secs": 10.148427248001099
+    }
+  ],
+  "per_group_history": {
+    "proto": {
+      "0": [
+        69.2,
+        33.2,
+        28.0,
+        25.6,
+        24.8,
+        27.2,
+        25.6,
+        20.0,
+        25.6,
+        21.6
+      ],
+      "1": [
+        64.8,
+        22.4,
+        15.6,
+        19.6,
+        15.6,
+        27.6,
+        11.2,
+        6.8,
+        16.8
+      ],
+      "2": [
+        62.8,
+        16.4,
+        14.4,
+        17.2,
+        19.2,
+        8.4,
+        9.6,
+        8.8
+      ],
+      "3": [
+        64.4,
+        26.0,
+        18.0,
+        14.0,
+        10.0,
+        14.8,
+        22.4
+      ],
+      "4": [
+        77.2,
+        26.4,
+        33.2,
+        37.6,
+        28.4,
+        26.8
+      ],
+      "5": [
+        59.6,
+        8.8,
+        11.2,
+        4.0,
+        11.6
+      ],
+      "6": [
+        66.0,
+        10.4,
+        14.4,
+        10.0
+      ],
+      "7": [
+        71.2,
+        12.4,
+        9.6
+      ],
+      "8": [
+        68.0,
+        15.6
+      ],
+      "9": [
+        78.4
+      ]
+    },
+    "conf": {
+      "0": [
+        69.2,
+        33.2,
+        28.0,
+        25.6,
+        24.8,
+        27.2,
+        25.6,
+        20.0,
+        25.6,
+        21.6
+      ],
+      "1": [
+        64.8,
+        22.4,
+        15.6,
+        19.6,
+        15.6,
+        27.6,
+        11.2,
+        6.8,
+        16.8
+      ],
+      "2": [
+        62.8,
+        16.4,
+        14.4,
+        17.2,
+        19.2,
+        8.4,
+        9.6,
+        8.8
+      ],
+      "3": [
+        64.4,
+        26.0,
+        18.0,
+        14.0,
+        10.0,
+        14.8,
+        22.4
+      ],
+      "4": [
+        77.2,
+        26.4,
+        33.2,
+        37.6,
+        28.4,
+        26.8
+      ],
+      "5": [
+        59.6,
+        8.8,
+        11.2,
+        4.0,
+        11.6
+      ],
+      "6": [
+        66.0,
+        10.4,
+        14.4,
+        10.0
+      ],
+      "7": [
+        71.2,
+        12.4,
+        9.6
+      ],
+      "8": [
+        68.0,
+        15.6
+      ],
+      "9": [
+        78.4
+      ]
+    }
+  },
+  "minutes": 1.8724252422650656,
+  "fake_data": false,
+  "val": true
+}

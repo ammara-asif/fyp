@@ -1,0 +1,36 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm flat --stream disjoint --theta 0.0 --val --out /home/appadmin/FYP2/results/stage2b_tuning/predictive_flat/v0.0 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train held out; test set untouched
+predictive_flat_disjoint_th0.0 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc proto  65.20 conf  65.20  route proto 100.00 conf 100.00  conflict   -    15s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9] (signal 0.031)
+  task  1  learners  2  acc proto  48.40 conf  47.20  route proto  69.80 conf  65.80  conflict 0.075  10s
+    split: learner 2 -> child 3 takes [10, 12, 13, 14] (signal 0.000)
+    split: learner 1 -> child 4 takes [11] (signal 0.040)
+  task  2  learners  4  acc proto  34.40 conf   6.67  route proto  44.93 conf   6.67  conflict 0.027  15s
+    split: learner 2 -> child 5 takes [16, 18] (signal 0.033)
+    split: learner 1 -> child 6 takes [15, 17, 19] (signal 0.045)
+  task  3  learners  6  acc proto  26.00 conf   5.00  route proto  29.90 conf   5.00  conflict 0.010  14s
+    split: learner 5 -> child 7 takes [20, 22, 23, 24] (signal 0.071)
+    split: learner 3 -> child 8 takes [21] (signal 0.037)
+  task  4  learners  8  acc proto  25.76 conf   4.00  route proto  28.80 conf   4.00  conflict 0.018  14s
+    split: learner 1 -> child 9 takes [26] (signal 0.017)
+    split: learner 5 -> child 10 takes [25] (signal 0.047)
+    split: learner 2 -> child 11 takes [27, 28, 29] (signal 0.013)
+  task  5  learners 11  acc proto  21.87 conf   3.47  route proto  23.87 conf   3.47  conflict 0.008  18s
+    split: learner 9 -> child 12 takes [34] (signal 0.000)
+    split: learner 10 -> child 13 takes [30] (signal 0.245)
+    split: learner 1 -> child 14 takes [31, 33] (signal 0.000)
+    split: learner 3 -> child 15 takes [32] (signal 0.052)
+  task  6  learners 15  acc proto  20.57 conf   2.86  route proto  22.00 conf   2.86  conflict 0.062  24s
+    split: learner 12 -> child 16 takes [35] (signal 0.004)
+    split: learner 15 -> child 17 takes [37, 38] (signal 0.000)
+    split: learner 14 -> child 18 takes [39] (signal 0.051)
+    split: learner 9 -> child 19 takes [36] (signal 0.043)
+  task  7  learners 19  acc proto  17.15 conf   2.50  route proto  18.05 conf   2.50  conflict 0.048  25s
+    split: learner 18 -> child 20 takes [42] (signal 0.086)
+  task  8  learners 20  acc proto  15.51 conf   2.22  route proto  16.71 conf   2.22  conflict 0.019  30s
+  task  9  learners 20  acc proto  16.24 conf   2.00  route proto  17.40 conf   2.00  conflict 0.022  25s
+
+final acc proto 16.24 conf 2.00  learners 20  splits 19  absorbs 9  conflict p50 0.000  (3.3 min) -> /home/appadmin/FYP2/results/stage2b_tuning/predictive_flat/v0.0/summary.json

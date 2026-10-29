@@ -1,0 +1,12 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode plastic --arm nested_a --stream disjoint --seed 0 --out /home/appadmin/FYP2/results/stage2_smoke/plastic_nested_a_disjoint/seed0 --fake-data --epochs 2 --n-tasks 6
+plastic_nested_a_disjoint seed=0 device=cuda lr=0.1 window=10 min_iters=20 cap=60
+  task  0  modules  0  acc  18.00  route(test) 100.00  route(train) 100.00  abstain 100.0%  6s
+    spawn #1 at task 1: classes [0, 1, 2, 3, 4] (plateau, after 20 main iters)
+  task  1  modules  1  acc  15.00  route(test)  75.50  route(train)  68.33  abstain  99.7%  3s
+    spawn #2 at task 2: classes [6, 7, 8] (plateau, after 20 main iters)
+  task  2  modules  2  acc  11.00  route(test)  81.67  route(train)   9.83  abstain  95.0%  4s
+  task  3  modules  2  acc   8.00  route(test)  83.50  route(train)   7.83  abstain  93.0%  6s
+  task  4  modules  2  acc   6.40  route(test)  85.80  route(train)   8.33  abstain  93.2%  3s
+  task  5  modules  2  acc   5.17  route(test)  88.50  route(train)   8.50  abstain  90.8%  4s
+
+final acc 5.17  avg-inc 10.59  forgetting 1.00  modules 2  (0.5 min)  -> /home/appadmin/FYP2/results/stage2_smoke/plastic_nested_a_disjoint/seed0/summary.json

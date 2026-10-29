@@ -1,5 +1,8 @@
-# nested_3_reversed.yaml — fast-deep instead of slow-deep (§7.4)
+# nested_3_reversed.yaml — fast-deep instead of slow-deep.
+# If this helps as much as nested_a, the effect is "some layers move less",
+# not "multi-timescale structure".
 name: nested_3_reversed
 rule: periodic
+lr: 0.1
 nesting: {depth: 3, periods: [1, 4, 16], ordering: fast_deep}
 rule_kwargs: {accumulate: mean}

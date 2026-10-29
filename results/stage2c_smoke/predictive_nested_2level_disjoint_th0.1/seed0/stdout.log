@@ -1,0 +1,11 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm nested_2level --stream disjoint --theta 0.1 --seed 0 --out /home/appadmin/FYP2/results/stage2c_smoke/predictive_nested_2level_disjoint_th0.1/seed0 --fake-data --epochs 2 --n-tasks 6
+predictive_nested_2level_disjoint_th0.1 seed=0 device=cuda lr=0.5 levels=[16, 1]
+  task  0  learners  1  acc soft  20.00 oracle  20.00  task-IL  20.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  4s
+  task  1  learners  1  acc soft  10.00 oracle  10.00  task-IL  21.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  2  learners  1  acc soft   7.33 oracle   7.33  task-IL  24.00  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  3  learners  1  acc soft   5.00 oracle   5.00  task-IL  20.25  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+  task  4  learners  1  acc soft   9.80 oracle   9.80  task-IL  44.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  1s
+    new learner 2 (from 1) for classes [27, 28]: conflicts with every learner
+  task  5  learners  2  acc soft  14.17 oracle  16.83  task-IL  49.17  route soft  88.67 own  70.2 cons  71.7 shared  97.7 lr  80.2  3s
+
+final acc soft 14.17  oracle 16.83  task-IL 49.17 (forgetting 0.60, new-task 26.67)  routing soft 88.67  learners 2  splits 0 + 1 on arrival  (0.2 min) -> /home/appadmin/FYP2/results/stage2c_smoke/predictive_nested_2level_disjoint_th0.1/seed0/summary.json

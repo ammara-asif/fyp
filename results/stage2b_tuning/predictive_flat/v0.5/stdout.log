@@ -1,0 +1,17 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm flat --stream disjoint --theta 0.5 --val --out /home/appadmin/FYP2/results/stage2b_tuning/predictive_flat/v0.5 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train held out; test set untouched
+predictive_flat_disjoint_th0.5 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc proto  64.80 conf  64.80  route proto 100.00 conf 100.00  conflict   -    15s
+  task  1  learners  1  acc proto  49.60 conf  49.60  route proto 100.00 conf 100.00  conflict 0.028  10s
+  task  2  learners  1  acc proto  34.53 conf  34.53  route proto 100.00 conf 100.00  conflict 0.030  10s
+  task  3  learners  1  acc proto  32.30 conf  32.30  route proto 100.00 conf 100.00  conflict 0.014  11s
+  task  4  learners  1  acc proto  29.92 conf  29.92  route proto 100.00 conf 100.00  conflict 0.008  11s
+  task  5  learners  1  acc proto  25.07 conf  25.07  route proto 100.00 conf 100.00  conflict 0.006  11s
+  task  6  learners  1  acc proto  27.03 conf  27.03  route proto 100.00 conf 100.00  conflict 0.002  11s
+  task  7  learners  1  acc proto  22.65 conf  22.65  route proto 100.00 conf 100.00  conflict 0.003  11s
+  task  8  learners  1  acc proto  23.47 conf  23.47  route proto 100.00 conf 100.00  conflict 0.000  11s
+  task  9  learners  1  acc proto  23.96 conf  23.96  route proto 100.00 conf 100.00  conflict 0.004  9s
+
+final acc proto 23.96 conf 23.96  learners 1  splits 0  absorbs 10  conflict p50 0.000  (1.9 min) -> /home/appadmin/FYP2/results/stage2b_tuning/predictive_flat/v0.5/summary.json

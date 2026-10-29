@@ -1,0 +1,30 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger predictive --arm flat --stream disjoint --theta 0.3 --val --out /home/appadmin/FYP2/results/stage2c_tuning/predictive_flat/v0.3 --n-tasks 10 --epochs 5
+Files already downloaded and verified
+Files already downloaded and verified
+VALIDATION MODE: evaluating on 10% of train; test set untouched
+predictive_flat_disjoint_th0.3 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc soft  67.60 oracle  67.60  task-IL  67.60  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  17s
+    split: learner 1 -> child 2 takes [5]
+  task  1  learners  2  acc soft  51.00 oracle  56.40  task-IL  40.00  route soft  91.60 own  92.2 cons  92.2 shared  91.0 lr  91.2  19s
+    new learner 3 (from 1) for classes [12]: conflicts with every learner
+    split: learner 2 -> child 4 takes [13]
+    split: learner 1 -> child 5 takes [10]
+    split: learner 1 -> child 6 takes [14]
+  task  2  learners  6  acc soft  40.00 oracle  61.20  task-IL  33.87  route soft  69.47 own  62.1 cons  70.1 shared  64.9 lr  64.0  36s
+    split: learner 2 -> child 7 takes [16]
+    split: learner 5 -> child 8 takes [19]
+    split: learner 1 -> child 9 takes [18]
+  task  3  learners  9  acc soft  35.20 oracle  67.00  task-IL  30.50  route soft  59.20 own  52.9 cons  61.5 shared  55.6 lr  48.7  35s
+    split: learner 3 -> child 10 takes [24]
+    split: learner 3 -> child 11 takes [20]
+  task  4  learners 11  acc soft  37.44 oracle  66.48  task-IL  28.24  route soft  57.52 own  38.5 cons  56.9 shared  53.2 lr  46.1  36s
+  task  5  learners 11  acc soft  29.73 oracle  55.67  task-IL  34.47  route soft  64.87 own  57.0 cons  64.1 shared  62.5 lr  45.9  18s
+    split: learner 2 -> child 12 takes [30]
+  task  6  learners 12  acc soft  28.80 oracle  56.06  task-IL  36.74  route soft  61.20 own  50.6 cons  60.0 shared  57.6 lr  44.7  31s
+    split: learner 1 -> child 13 takes [35]
+    split: learner 1 -> child 14 takes [36]
+  task  7  learners 14  acc soft  26.45 oracle  54.45  task-IL  33.15  route soft  61.60 own  44.5 cons  60.8 shared  57.0 lr  41.2  31s
+  task  8  learners 14  acc soft  24.80 oracle  48.80  task-IL  33.73  route soft  64.18 own  53.9 cons  62.9 shared  60.4 lr  39.3  24s
+  task  9  learners 14  acc soft  25.44 oracle  48.24  task-IL  37.36  route soft  65.64 own  51.8 cons  66.4 shared  63.9 lr  41.5  20s
+
+final acc soft 25.44  oracle 48.24  task-IL 37.36 (forgetting 3.96, new-task 36.92)  routing soft 65.64  learners 14  splits 12 + 1 on arrival  (4.5 min) -> /home/appadmin/FYP2/results/stage2c_tuning/predictive_flat/v0.3/summary.json

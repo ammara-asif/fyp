@@ -1,0 +1,136 @@
+{
+  "run": "single_nested_a_disjoint",
+  "mode": "single",
+  "stream": "disjoint",
+  "arm": "nested_a",
+  "seed": 0,
+  "epochs": 2,
+  "lr": 0.1,
+  "tau": 1.0,
+  "final_avg_acc": 3.3333333333333335,
+  "avg_incremental_acc": 9.472222222222223,
+  "forgetting": 22.0,
+  "n_modules": 0,
+  "n_tasks": 6,
+  "modules_per_task": 0.0,
+  "routing_acc_test": NaN,
+  "params": 1109240,
+  "anchor_kb": 1800.0,
+  "spawn_reasons": {
+    "competence": 0,
+    "plateau": 0,
+    "cap": 0
+  },
+  "spawn_log": [],
+  "per_task": [
+    {
+      "task": 0,
+      "group": 0,
+      "n_modules": 0,
+      "avg_acc": 26.0,
+      "routing_acc_test": NaN,
+      "routing_acc_train": 0.0,
+      "abstain_pct": 0.0,
+      "params": 1109240,
+      "anchor_kb": 300.0,
+      "secs": 7.783367156982422
+    },
+    {
+      "task": 1,
+      "group": 1,
+      "n_modules": 0,
+      "avg_acc": 11.5,
+      "routing_acc_test": NaN,
+      "routing_acc_train": 0.0,
+      "abstain_pct": 0.0,
+      "params": 1109240,
+      "anchor_kb": 600.0,
+      "secs": 0.49698615074157715
+    },
+    {
+      "task": 2,
+      "group": 2,
+      "n_modules": 0,
+      "avg_acc": 7.0,
+      "routing_acc_test": NaN,
+      "routing_acc_train": 0.0,
+      "abstain_pct": 0.0,
+      "params": 1109240,
+      "anchor_kb": 900.0,
+      "secs": 0.46099162101745605
+    },
+    {
+      "task": 3,
+      "group": 3,
+      "n_modules": 0,
+      "avg_acc": 5.0,
+      "routing_acc_test": NaN,
+      "routing_acc_train": 0.0,
+      "abstain_pct": 0.0,
+      "params": 1109240,
+      "anchor_kb": 1200.0,
+      "secs": 0.48234033584594727
+    },
+    {
+      "task": 4,
+      "group": 4,
+      "n_modules": 0,
+      "avg_acc": 4.0,
+      "routing_acc_test": NaN,
+      "routing_acc_train": 0.0,
+      "abstain_pct": 0.0,
+      "params": 1109240,
+      "anchor_kb": 1500.0,
+      "secs": 0.45842719078063965
+    },
+    {
+      "task": 5,
+      "group": 5,
+      "n_modules": 0,
+      "avg_acc": 3.3333333333333335,
+      "routing_acc_test": NaN,
+      "routing_acc_train": 0.0,
+      "abstain_pct": 0.0,
+      "params": 1109240,
+      "anchor_kb": 1800.0,
+      "secs": 0.4707372188568115
+    }
+  ],
+  "per_group_history": {
+    "0": [
+      26.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "1": [
+      23.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "2": [
+      21.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "3": [
+      20.0,
+      0.0,
+      0.0
+    ],
+    "4": [
+      20.0,
+      0.0
+    ],
+    "5": [
+      20.0
+    ]
+  },
+  "minutes": 0.22160476843516033,
+  "fake_data": true
+}

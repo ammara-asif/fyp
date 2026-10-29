@@ -1,0 +1,47 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2c.py --trigger reactive --arm nested_a --stream disjoint --delta 0.3 --seed 0 --out /home/appadmin/FYP2/results/stage2c_tuned/reactive_nested_a_disjoint_d0.3/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+reactive_nested_a_disjoint_d0.3 seed=0 device=cuda lr=0.1 levels=[16, 4, 1]
+  task  0  learners  1  acc soft  71.20 oracle  71.20  route soft 100.00 own 100.0 cons 100.0 shared 100.0 lr 100.0  16s
+    split: learner 1 -> child 2 takes [5, 6, 7, 8, 9]
+  task  1  learners  2  acc soft  54.20 oracle  68.80  route soft  73.30 own  72.7 cons  71.2 shared  67.5 lr  71.7  17s
+    split: learner 2 -> child 3 takes [12, 13, 14]
+  task  2  learners  3  acc soft  43.00 oracle  60.07  route soft  64.93 own  64.3 cons  63.5 shared  59.4 lr  63.5  25s
+    split: learner 3 -> child 4 takes [16]
+    split: learner 2 -> child 5 takes [15, 19]
+  task  3  learners  5  acc soft  35.90 oracle  59.00  route soft  57.50 own  53.5 cons  57.0 shared  51.5 lr  52.6  34s
+    split: learner 3 -> child 6 takes [22]
+    split: learner 4 -> child 7 takes [21]
+  task  4  learners  7  acc soft  38.68 oracle  64.24  route soft  57.16 own  52.5 cons  56.4 shared  51.2 lr  47.5  35s
+    split: learner 5 -> child 8 takes [27]
+  task  5  learners  8  acc soft  33.93 oracle  57.23  route soft  59.47 own  54.8 cons  58.5 shared  55.3 lr  44.3  29s
+    split: learner 3 -> child 9 takes [31]
+  task  6  learners  9  acc soft  31.11 oracle  53.69  route soft  58.86 own  51.0 cons  57.3 shared  55.0 lr  42.6  38s
+    split: learner 4 -> child 10 takes [35, 36]
+  task  7  learners 10  acc soft  27.10 oracle  52.75  route soft  56.55 own  51.6 cons  56.7 shared  52.5 lr  37.7  31s
+    split: learner 6 -> child 11 takes [42]
+    split: learner 10 -> child 12 takes [41]
+  task  8  learners 12  acc soft  26.84 oracle  52.47  route soft  57.51 own  45.1 cons  57.6 shared  52.9 lr  35.2  41s
+    split: learner 5 -> child 13 takes [46, 48]
+  task  9  learners 13  acc soft  25.66 oracle  51.20  route soft  56.78 own  47.2 cons  57.4 shared  53.2 lr  34.9  35s
+    split: learner 3 -> child 14 takes [50]
+    split: learner 6 -> child 15 takes [51, 53]
+    split: learner 4 -> child 16 takes [52]
+    split: learner 8 -> child 17 takes [54]
+  task 10  learners 17  acc soft  28.47 oracle  59.73  route soft  53.82 own  44.6 cons  52.3 shared  48.6 lr  35.7  54s
+    split: learner 4 -> child 18 takes [55]
+    split: learner 14 -> child 19 takes [56]
+  task 11  learners 19  acc soft  26.33 oracle  60.18  route soft  49.57 own  37.6 cons  49.2 shared  44.0 lr  30.5  66s
+    split: learner 4 -> child 20 takes [63]
+  task 12  learners 20  acc soft  24.03 oracle  57.25  route soft  51.75 own  44.0 cons  49.6 shared  45.9 lr  32.1  51s
+  task 13  learners 20  acc soft  22.34 oracle  54.24  route soft  51.84 own  42.9 cons  50.6 shared  46.5 lr  32.0  53s
+  task 14  learners 20  acc soft  22.16 oracle  51.48  route soft  51.80 own  39.0 cons  52.3 shared  48.5 lr  32.8  45s
+  task 15  learners 20  acc soft  21.24 oracle  49.39  route soft  55.36 own  41.7 cons  55.3 shared  51.3 lr  32.4  39s
+  task 16  learners 20  acc soft  21.08 oracle  48.99  route soft  56.76 own  45.0 cons  55.4 shared  51.5 lr  32.5  48s
+  task 17  learners 20  acc soft  22.41 oracle  50.12  route soft  54.91 own  41.6 cons  54.4 shared  50.8 lr  31.1  57s
+  task 18  learners 20  acc soft  22.05 oracle  50.01  route soft  52.52 own  35.8 cons  52.7 shared  49.1 lr  31.7  68s
+  task 19  learners 20  acc soft  20.65 oracle  48.34  route soft  52.94 own  40.3 cons  52.0 shared  48.4 lr  30.4  61s
+/home/appadmin/venv-fyp/lib/python3.8/site-packages/numpy/lib/nanfunctions.py:1556: RuntimeWarning: All-NaN slice encountered
+  return function_base._ureduce(a,
+
+final acc soft 20.65  oracle 48.34  routing soft 52.94  learners 20  splits 19 + 0 on arrival  (14.1 min) -> /home/appadmin/FYP2/results/stage2c_tuned/reactive_nested_a_disjoint_d0.3/seed0/summary.json

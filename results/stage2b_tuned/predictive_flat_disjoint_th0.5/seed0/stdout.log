@@ -1,0 +1,26 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2b.py --trigger predictive --arm flat --stream disjoint --theta 0.5 --seed 0 --out /home/appadmin/FYP2/results/stage2b_tuned/predictive_flat_disjoint_th0.5/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+predictive_flat_disjoint_th0.5 seed=0 device=cuda lr=0.1 levels=[1]
+  task  0  learners  1  acc proto  67.60 conf  67.60  route proto 100.00 conf 100.00  conflict   -    15s
+  task  1  learners  1  acc proto  49.20 conf  49.20  route proto 100.00 conf 100.00  conflict 0.012  12s
+  task  2  learners  1  acc proto  34.87 conf  34.87  route proto 100.00 conf 100.00  conflict 0.008  12s
+  task  3  learners  1  acc proto  33.25 conf  33.25  route proto 100.00 conf 100.00  conflict 0.000  12s
+  task  4  learners  1  acc proto  37.44 conf  37.44  route proto 100.00 conf 100.00  conflict 0.018  12s
+  task  5  learners  1  acc proto  28.73 conf  28.73  route proto 100.00 conf 100.00  conflict 0.014  12s
+  task  6  learners  1  acc proto  27.74 conf  27.74  route proto 100.00 conf 100.00  conflict 0.000  12s
+  task  7  learners  1  acc proto  26.52 conf  26.52  route proto 100.00 conf 100.00  conflict 0.007  13s
+  task  8  learners  1  acc proto  22.04 conf  22.04  route proto 100.00 conf 100.00  conflict 0.010  12s
+  task  9  learners  1  acc proto  23.64 conf  23.64  route proto 100.00 conf 100.00  conflict 0.004  13s
+  task 10  learners  1  acc proto  27.65 conf  27.65  route proto 100.00 conf 100.00  conflict 0.008  13s
+  task 11  learners  1  acc proto  21.53 conf  21.53  route proto 100.00 conf 100.00  conflict 0.010  13s
+  task 12  learners  1  acc proto  26.20 conf  26.20  route proto 100.00 conf 100.00  conflict 0.004  13s
+  task 13  learners  1  acc proto  23.34 conf  23.34  route proto 100.00 conf 100.00  conflict 0.008  14s
+  task 14  learners  1  acc proto  23.91 conf  23.91  route proto 100.00 conf 100.00  conflict 0.023  13s
+  task 15  learners  1  acc proto  20.98 conf  20.98  route proto 100.00 conf 100.00  conflict 0.014  14s
+  task 16  learners  1  acc proto  22.08 conf  22.08  route proto 100.00 conf 100.00  conflict 0.000  14s
+  task 17  learners  1  acc proto  22.98 conf  22.98  route proto 100.00 conf 100.00  conflict 0.004  14s
+  task 18  learners  1  acc proto  20.99 conf  20.99  route proto 100.00 conf 100.00  conflict 0.004  15s
+  task 19  learners  1  acc proto  19.59 conf  19.59  route proto 100.00 conf 100.00  conflict 0.003  14s
+
+final acc proto 19.59 conf 19.59  learners 1  splits 0  absorbs 20  conflict p50 0.000  (4.5 min) -> /home/appadmin/FYP2/results/stage2b_tuned/predictive_flat_disjoint_th0.5/seed0/summary.json

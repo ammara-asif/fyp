@@ -1,0 +1,27 @@
+# /home/appadmin/venv-fyp/bin/python /home/appadmin/FYP2/experiments/stage2.py --mode plastic --arm flat --stream disjoint --seed 0 --out /home/appadmin/FYP2/results/stage2/plastic_flat_disjoint/seed0
+Files already downloaded and verified
+Files already downloaded and verified
+plastic_flat_disjoint seed=0 device=cuda lr=0.1 window=79 min_iters=158 cap=1185
+    spawn #1 at task 0: classes [0, 1, 2, 3, 4] (plateau, after 215 main iters)
+  task  0  modules  1  acc  71.60  route(test) 100.00  route(train)  91.86  abstain  63.2%  19s
+  task  1  modules  1  acc  45.90  route(test) 100.00  route(train)  19.99  abstain  79.8%  24s
+  task  2  modules  1  acc  31.33  route(test) 100.00  route(train)  32.68  abstain  67.2%  23s
+  task  3  modules  1  acc  26.60  route(test) 100.00  route(train)  30.89  abstain  69.0%  24s
+  task  4  modules  1  acc  29.00  route(test) 100.00  route(train)  19.11  abstain  80.9%  24s
+  task  5  modules  1  acc  24.20  route(test) 100.00  route(train)  33.49  abstain  66.5%  24s
+  task  6  modules  1  acc  23.03  route(test) 100.00  route(train)  34.75  abstain  65.2%  24s
+  task  7  modules  1  acc  22.27  route(test) 100.00  route(train)  27.41  abstain  72.5%  25s
+  task  8  modules  1  acc  21.22  route(test) 100.00  route(train)  32.50  abstain  67.4%  24s
+  task  9  modules  1  acc  20.96  route(test) 100.00  route(train)  24.66  abstain  75.3%  25s
+  task 10  modules  1  acc  22.05  route(test) 100.00  route(train)  26.16  abstain  73.8%  25s
+  task 11  modules  1  acc  16.43  route(test) 100.00  route(train)  33.58  abstain  66.4%  24s
+  task 12  modules  1  acc  17.34  route(test) 100.00  route(train)  27.17  abstain  72.8%  24s
+  task 13  modules  1  acc  19.41  route(test) 100.00  route(train)  31.57  abstain  68.3%  27s
+  task 14  modules  1  acc  16.51  route(test) 100.00  route(train)  29.61  abstain  70.3%  28s
+  task 15  modules  1  acc  18.11  route(test) 100.00  route(train)  33.10  abstain  66.8%  27s
+  task 16  modules  1  acc  15.47  route(test) 100.00  route(train)  32.78  abstain  67.1%  27s
+  task 17  modules  1  acc  18.32  route(test) 100.00  route(train)  31.68  abstain  68.3%  19s
+  task 18  modules  1  acc  14.95  route(test) 100.00  route(train)  33.57  abstain  66.4%  18s
+  task 19  modules  1  acc  15.28  route(test) 100.00  route(train)  31.56  abstain  68.3%  19s
+
+final acc 15.28  avg-inc 24.50  forgetting 45.35  modules 1  (8.0 min)  -> /home/appadmin/FYP2/results/stage2/plastic_flat_disjoint/seed0/summary.json
