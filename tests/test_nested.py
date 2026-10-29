@@ -160,6 +160,15 @@ def test_a_update_counts(paths):
     assert m["optimizer_steps"] == 40
 
 
+def test_a_uniform_period_control(paths):
+    # Averaging control: every level steps every 4 minibatches (no timescale difference between levels).
+    cfg = sr.arm_cfg("nested_a", **TINY, nesting=dict(periods=[4, 4, 4]))
+    assert sr.arm_label(cfg) == "nested_a_4-4-4_ep4"
+    m = _run(cfg, paths)
+    for row in m["level_log_per_exp"]:
+        assert [row[f"updates/{l}"] for l in LEVELS] == [5, 5, 5]
+    assert m["optimizer_steps"] == 40   # minibatch backward passes, same as Flat and A
+
 def test_a_matches_d_with_zero_penalty(paths):
     # Same stepping; D computes the data gradient through a double-backward-capable graph, so
     # allow float-level differences instead of exact equality.

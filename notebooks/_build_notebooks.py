@@ -838,6 +838,84 @@ skipped, so only the new A and C runs are processed, and all arms land in one ta
 """),
 ])
 
+write("stage1_gate1.ipynb", [
+    md("""
+# Stage 1, Gate 1 evidence: 5 seeds for Flat, A and B
+
+The 3-seed control showed A with lower probe forgetting than Flat at all three levels (about 1.4 points at layer3 and
+layer4), but within roughly one to two seed standard deviations. The plan asks for 5 seeds before a final claim, so this
+adds **seeds 3 and 4** for:
+
+- **Flat** (`flat`, lr 0.1): the reference.
+- **A** (`nested_a`, lr 0.5): the candidate.
+- **B** (`nested_b`, lr 0.6): Flat + LLRD through the same code path. Gate 1 asks for a gain over Flat *and*
+  Flat + LLRD, so B gets the same 5 seeds. Delete it from `ARMS` to save 2 runs.
+
+The configs are identical to the existing control runs except for the seed (same stage `stage1_nested_control`, same lrs
+from validation), so seeds 0-2 are recognised as finished and skipped. C and D stay at 3 seeds (no gain to confirm).
+Then re-run `stage1_analysis`, `stage1_drift_diagnostic` and `stage1_structural` (CPU): they pick up the new runs.
+"""),
+    code(SETUP),
+    code(NESTED_TABLE),
+    md("## 1. Seeds 3 and 4 (test set, checkpoints)\nEstimated ~9 min per run, so ~55 min for 6 new runs (not measured for seeds 3-4)."),
+    code(r'''EPOCHS = 10
+SEEDS = [0, 1, 2, 3, 4]               # 0-2 exist and are skipped
+ARMS = {"flat": 0.1, "nested_a": 0.5, "nested_b": 0.6}   # tuned lrs from validation (unchanged)
+GATE1 = [sr.arm_cfg(name, stage="stage1_nested_control", epochs=EPOCHS, seed=s, lr=lr,
+                    eval_split="test", save_checkpoints=True)
+         for s in SEEDS for name, lr in ARMS.items()]   # seed outer: each seed finishes every arm first
+for c in GATE1: print(run_id(c), sr.arm_label(c), c["lr"], c["seed"], "| done" if load_result(c, paths) else "")'''),
+    code("out = run_sweep(GATE1, sr.run_experiment, paths)"),
+    code(r'''cdf = table(GATE1)
+done = cdf[cdf["status"] != "not finished"] if "status" in cdf else cdf
+assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
+cols = ["avg_incremental_acc", "acc_just_learned", "final_avg_acc", "avg_forgetting", "minutes"]
+display(done.groupby(["arm", "lr"])[cols].agg(["mean", "std", "count"]).round(2))'''),
+    md("""
+## 2. Averaging control: every level steps every 4 minibatches (`nested_a_4-4-4`)
+
+Question: is A's lower probe forgetting caused by **different timescales per level** (nesting), or simply by stepping on
+gradients **averaged over several minibatches**? This arm is A's own rule with periods (4, 4, 4): every level, head
+included, steps every 4 minibatches on the mean of its accumulated gradients. Same minibatches, same backward passes,
+no timescale difference between levels.
+
+- Control ≈ A on probe forgetting → A's gain is gradient averaging, not nesting (deflationary result).
+- Control clearly worse than A (and new-task accuracy not much lower) → the per-level timescales matter.
+
+Protocol as for every other arm: validation lr grid on seed 0, selection by highest average incremental accuracy,
+extend the grid if the best lr is at an edge; then 5 seeds on the test set with checkpoints.
+"""),
+    code(r'''AVG_GRID = [0.1, 0.3, 0.5, 0.7, 0.9]   # same grid as A
+AVG = dict(nesting=dict(periods=[4, 4, 4]))
+AVG_VAL = [sr.arm_cfg("nested_a", stage="stage1_nested_lr_grid", epochs=EPOCHS, seed=0, lr=lr, eval_split="val", **AVG)
+           for lr in AVG_GRID]
+for c in AVG_VAL: print(run_id(c), sr.arm_label(c), c["lr"])
+out = run_sweep(AVG_VAL, sr.run_experiment, paths)
+g = table(AVG_VAL)
+display(g[["arm", "lr", "avg_incremental_acc", "acc_just_learned", "final_avg_acc", "minutes"]])
+best = g.loc[g["avg_incremental_acc"].idxmax()]
+print(f"best lr: {best['lr']} (avg incremental {best['avg_incremental_acc']:.2f})")
+if best["lr"] in (min(AVG_GRID), max(AVG_GRID)): print("WARNING: best lr at the edge of the grid; extend AVG_GRID first.")'''),
+    code(r'''AVG_LR = None                      # <- fill in from the grid above
+if AVG_LR is None:
+    print("set AVG_LR first")
+else:
+    AVG_TEST = [sr.arm_cfg("nested_a", stage="stage1_nested_control", epochs=EPOCHS, seed=s, lr=AVG_LR,
+                           eval_split="test", save_checkpoints=True, **AVG) for s in SEEDS]
+    for c in AVG_TEST: print(run_id(c), sr.arm_label(c), c["lr"], c["seed"])
+    out = run_sweep(AVG_TEST, sr.run_experiment, paths)
+    cdf = table(GATE1 + AVG_TEST)
+    done = cdf[cdf["status"] != "not finished"] if "status" in cdf else cdf
+    assert done["steps"].nunique() == 1 and done["n_params"].nunique() == 1, "steps or param count differ between arms. The comparison is NOT matched"
+    display(done.groupby(["arm", "lr"])[cols].agg(["mean", "std", "count"]).round(2))
+    lvl = [c for c in done.columns if c.startswith(("updates/", "rel_displacement/"))]
+    display(done.groupby(["arm", "lr"])[lvl].mean().T.round(4))'''),
+    md("""
+**Next:** re-run `stage1_analysis` → `stage1_drift_diagnostic` → `stage1_structural`. The Gate 1 numbers are the
+per-level `probe_forgetting` rows (layer3, layer4) with 5 seeds each, plus `acc_just_learned` as the plasticity check.
+"""),
+])
+
 write("stage1_structural.ipynb", [
     md("""
 # Stage 1: CKA drift and gradient cosine per level (from checkpoints)
