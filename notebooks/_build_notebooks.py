@@ -324,6 +324,39 @@ axes[0].set(title="Linear-probe forgetting per level (lower = kept more)", ylabe
 axes[1].set(title="Final linear-probe accuracy on all tasks (5-way, chance 20%)", ylabel="%")
 for ax in axes: ax.legend(); ax.grid(alpha=.3)
 plt.show()"""),
+    md("""
+### Report figure: the Stage 1 control arms only
+
+Only the arms that are compared for Gate 1: all at 10 epochs per task, each at its validation-tuned lr, nested code
+path. The diagnostic runs (`_ep2`, `_ep3`), the old-path runs and the LLRD orientation runs are left out (they are in the
+table above). Error bars are the seed std; the legend shows each arm's seed count (`n`). Saved to Drive under `figures/`.
+"""),
+    code(r"""import os
+REPORT_ARMS = [("flat_nl", 0.1, "Flat", "tab:gray"), ("nested_b", 0.6, "B (Flat + LLRD)", "tab:blue"),
+               ("nested_a", 0.5, "A (periodic)", "tab:red"),
+               ("nested_a_4-4-4", 0.3, "Averaging control (4,4,4)", "tab:orange"),
+               ("nested_c_cw0.1", 0.1, "C (EMA)", "tab:green"),
+               ("nested_d_lam0.01", 0.7, "D (penalty)", "tab:purple")]
+fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
+x = np.arange(len(levels))
+for i, (arm, lr, name, col) in enumerate(REPORT_ARMS):
+    g = adf[(adf["arm"] == arm) & np.isclose(adf["lr"], lr)]
+    if g.empty:
+        print("missing:", arm, lr); continue
+    off = (i - (len(REPORT_ARMS) - 1) / 2) * 0.06          # small x offset so error bars don't overlap
+    for ax, key in zip(axes, ["probe_forgetting", "probe_final"]):
+        vals = g[[f"{key}/{l}" for l in levels]]
+        ax.errorbar(x + off, vals.mean(), yerr=vals.std(), marker="o", capsize=3, color=col,
+                    label=f"{name}, lr {lr} (n={len(g)})")
+axes[0].set(title="Linear-probe forgetting per level (lower = kept more)", ylabel="points")
+axes[1].set(title="Final linear-probe accuracy, all tasks (5-way, chance 20%)", ylabel="%")
+for ax in axes:
+    ax.set_xticks(x, levels); ax.grid(alpha=.3)
+axes[0].legend(fontsize=8)
+fig.tight_layout()
+os.makedirs(f"{paths['root']}/figures", exist_ok=True)
+fig.savefig(f"{paths['root']}/figures/stage1_probe_control.png", dpi=200, bbox_inches="tight")
+plt.show()"""),
 ])
 
 write("stage1_drift_diagnostic.ipynb", [
